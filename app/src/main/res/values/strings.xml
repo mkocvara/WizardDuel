@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">WizardDuel</string>
+
+    <string name="tglbtn_default_off">OFF</string>
+    <string name="tglbtn_default_on">ON</string>
+
+    <string name="main_desc_title">Game title: Wizard Duel</string>
+    <string name="main_btn_play">Play</string>
+    <string name="main_btn_options">Options</string>
+    <string name="main_btn_quit">Quit</string>
+
+    <string name="options_txt_sound">Sound</string>
+    <string name="options_txt_anim">Animations</string>
+    <string name="options_txt_credits">Made by Marek Kočvara for the KF7008 Mobile Application Programming module at Northumbria University.\n\nUI \"art\" by Marek Kočvara\nIn-game art &amp; title art by František Šín</string>
+    <string name="options_btn_back">&lt; Back</string>
 </resources>

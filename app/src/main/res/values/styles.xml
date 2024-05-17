@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="UI">
+        <item name="tint">?colorPrimary</item>
+        <item name="android:textColor">?colorAccent</item>
+        <item name="android:fontFamily">@font/indie_flower</item>
+    </style>
+
+    <style name="UI.Button" parent="UI">
+        <item name="android:background">@drawable/button_anim</item>
+        <item name="android:backgroundTint">?colorPrimary</item>
+        <item name="backgroundTint">?colorPrimary</item>
+
+        <item name="android:textSize">40sp</item>
+        <item name="fontWeight">600</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+
+        <item name="android:padding">5dp</item>
+
+        <!-- NOTE: Have to apply the style directly in layout to get layout attributes to work: -->
+        <item name="android:layout_width">@dimen/button_width</item>
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:layout_margin">15dp</item>
+    </style>
+
+    <style name="UI.Button.Outlined" parent="@style/UI.Button">
+        <item name="android:background">@drawable/button_outlined_anim</item>
+    </style>
+
+    <style name="UI.Button.Back" parent="UI.Button.Outlined">
+        <item name="android:layout_width">@dimen/back_button_width</item>
+        <item name="android:layout_height">@dimen/back_button_height</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="UI.Button.Toggle" parent="@style/UI.Button">
+        <item name="android:background">@drawable/togglebutton</item>
+    </style>
+
+    <style name="UI.Text" parent="UI">
+        <item name="android:textSize">25sp</item>
+        <item name="android:layout_margin">5dp</item>
+    </style>
+
+    <style name="UI.Text.Label" parent="UI.Text">
+        <item name="android:textSize">55sp</item>
+
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+
+        <item name="android:layout_margin">15dp</item>
+    </style>
+</resources>

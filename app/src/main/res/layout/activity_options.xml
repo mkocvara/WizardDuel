@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".OptionsActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_halfvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_upperhoriz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_lowerhoriz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4"/>
+
+    <TextView
+        android:id="@+id/options_txt_sound"
+        style="@style/UI.Text.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/options_txt_sound"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/options_guide_halfvert"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="@id/options_guide_upperhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/options_guide_upperhoriz"
+        />
+
+    <com.example.wizardduel.ToggleButtonDual
+        android:id="@+id/options_tglbtn_sound"
+        style="@style/UI.Button.Toggle"
+        android:checked="true"
+        android:textAlignment="center"
+        android:textOff="@string/tglbtn_default_off"
+        android:textOn="@string/tglbtn_default_on"
+        app:layout_constraintBottom_toBottomOf="@id/options_guide_upperhoriz"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/options_guide_halfvert"
+        app:layout_constraintTop_toTopOf="@id/options_guide_upperhoriz" />
+
+    <TextView
+        android:id="@+id/options_txt_anim"
+        style="@style/UI.Text.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/options_txt_anim"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/options_guide_halfvert"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="@id/options_guide_lowerhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/options_guide_lowerhoriz"
+        />
+
+    <com.example.wizardduel.ToggleButtonDual
+        android:id="@+id/options_tglbtn_anim"
+        style="@style/UI.Button.Toggle"
+        android:checked="true"
+        android:textAlignment="center"
+        android:textOff="@string/tglbtn_default_off"
+        android:textOn="@string/tglbtn_default_on"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/options_guide_halfvert"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="@id/options_guide_lowerhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/options_guide_lowerhoriz"
+        />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_texttop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_creditsleftvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.20"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/options_guide_creditsrightvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.80"/>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/options_guide_creditsrightvert"
+        app:layout_constraintStart_toStartOf="@id/options_guide_creditsleftvert"
+        app:layout_constraintTop_toTopOf="@+id/options_guide_texttop">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/options_txt_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                app:fontWeight="800"
+                android:textFontWeight="800"
+                android:layout_marginBottom="10dp"
+                tools:ignore="UnusedAttribute" />
+
+            <TextView
+                android:id="@+id/options_txt_credits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/options_txt_credits" />
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/options_btn_back"
+        style="@style/UI.Button.Back"
+        android:onClick="onClick"
+        android:text="@string/options_btn_back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.04"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.04"
+        tools:ignore="TextSizeCheck" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,16 +4,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:weightSum="1">
 
-    <TextView
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/main_guide_split"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.45"/>
+
+    <ImageView
+        android:id="@+id/main_img_title"
+        style="@style/UI"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="50dp"
+        android:contentDescription="@string/main_desc_title"
+        app:layout_constraintBottom_toTopOf="@+id/main_guide_split"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.25" />
+        app:srcCompat="@drawable/title_anim" />
+
+    <LinearLayout
+        android:id="@+id/main_layout_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_img_title">
+
+        <Button
+            android:id="@+id/main_btn_play"
+            style="@style/UI.Button"
+            android:onClick="onClick"
+            android:text="@string/main_btn_play" />
+
+        <Button
+            android:id="@+id/main_btn_options"
+            style="@style/UI.Button"
+            android:onClick="onClick"
+            android:text="@string/main_btn_options" />
+
+        <Button
+            android:id="@+id/main_btn_quit"
+            style="@style/UI.Button"
+            android:onClick="onClick"
+            android:text="@string/main_btn_quit" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
