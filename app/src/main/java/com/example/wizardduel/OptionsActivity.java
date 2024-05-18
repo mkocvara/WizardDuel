@@ -4,21 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-
-import java.lang.reflect.Method;
 
 public class OptionsActivity extends AppCompatActivity implements View.OnClickListener
 {
 	private Button mBtnBack;
 	private ToggleButtonDual mTglSound, mTglAnim;
 	private AnimHandler mAnimHandler;
-
-	private boolean animOption = true, soundOption = true;
+	private SimplePreferences mPreferences;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -26,13 +21,32 @@ public class OptionsActivity extends AppCompatActivity implements View.OnClickLi
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_options);
 
+		mPreferences = SimplePreferences.get();
+
 		mBtnBack = findViewById(R.id.options_btn_back);
 		mTglSound = findViewById(R.id.options_tglbtn_sound);
 		mTglAnim = findViewById(R.id.options_tglbtn_anim);
 
+		mTglSound.setChecked(mPreferences.getPrefSound());
+		mTglAnim.setChecked(mPreferences.getPrefAnim());
+
+		mTglSound.setOnCheckedChangeListener((btn, checked) -> {
+			mPreferences.savePrefSound(checked);
+			syncAnims();
+		});
+		mTglAnim.setOnCheckedChangeListener((btn, checked) -> {
+			mPreferences.savePrefAnim(checked);
+
+			if (checked)
+				mAnimHandler.start();
+			else
+				mAnimHandler.stop();
+		});
+
 		mAnimHandler = new AnimHandler(getLifecycle(), true);
 		getLifecycle().addObserver(mAnimHandler);
 		addAnimsToHandler();
+
 	}
 
 	@Override
@@ -52,5 +66,17 @@ public class OptionsActivity extends AppCompatActivity implements View.OnClickLi
 
 		sld = (StateListDrawable)mTglAnim.getBackground();
 		mAnimHandler.addStateListDrawableAnims(sld);
+	}
+
+	private void syncAnims()
+	{
+		// A slightly hacky solution to syncing animations when a toggle button is toggled
+		// (thus resetting its anim delay) on the options screen.
+
+		if (!mAnimHandler.areAnimsPlaying())
+			return;
+
+		mAnimHandler.stop();
+		mAnimHandler.start();
 	}
 }

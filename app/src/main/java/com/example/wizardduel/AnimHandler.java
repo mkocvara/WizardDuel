@@ -1,5 +1,6 @@
 package com.example.wizardduel;
 
+import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
@@ -24,6 +25,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 {
 	final private ArrayList<AnimationDrawable> mAnims = new ArrayList<>();
 	final private Lifecycle mLifecycle;
+	final private SimplePreferences mPreferences;
 
 	/**
 	 * True if animation been started using start().
@@ -38,6 +40,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 	public AnimHandler(Lifecycle lifecycle)
 	{
 		mLifecycle = lifecycle;
+		mPreferences = SimplePreferences.get();
 	}
 
 	public AnimHandler(Lifecycle lifecycle, boolean playImmediately)
@@ -154,9 +157,6 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 */
 	public void start()
 	{
-		if (mPlaying)
-			return;
-
 		mPlaying = true;
 
 		if (mLifecycle.getCurrentState().isAtLeast(State.STARTED))
@@ -168,9 +168,6 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 */
 	public void stop()
 	{
-		if (!mPlaying)
-			return;
-
 		mPlaying = false;
 
 		stopAnimating();
@@ -182,7 +179,9 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 */
 	protected void animate()
 	{
-		if (mAnimating)
+		boolean animationsOn = mPreferences.getPrefAnim();
+
+		if (!animationsOn || mAnimating)
 			return;
 
 		for (AnimationDrawable anim : mAnims)
@@ -216,5 +215,10 @@ public class AnimHandler implements DefaultLifecycleObserver
 	public void onStop(@NonNull LifecycleOwner owner)
 	{
 		if (mPlaying) stopAnimating();
+	}
+
+	public boolean areAnimsPlaying()
+	{
+		return mPlaying;
 	}
 }
