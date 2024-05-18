@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		if (view == mPlayBtn)
 		{
 			//intent = new Intent(this, PlayerSetupActivity.class);
+			intent = new Intent(this, GameActivity.class);
 		}
 		else if (view == mOptionsBtn)
 		{

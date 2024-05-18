@@ -1,0 +1,29 @@
+<resources>
+    <declare-styleable name="GameView">
+        <!-- Fraction of the screen determining top bound of both wizards.
+            Takes precedence over individual bounds attributes. -->
+        <attr name="wizardsRelativeTop" format="float" />
+        <!-- Fraction of the screen determining bottom bound of both wizards.
+            Takes precedence over individual bounds attributes. -->
+        <attr name="wizardsRelativeBottom" format="float" />
+        <!-- Fraction of the screen determining distance from both wizards' respective edges
+            of the screen. Takes precedence over individual bounds attributes. -->
+        <attr name="wizardsRelativeDistFromEdge" format="float" />
+
+        <!-- Top bound of the left Wizard. Superseded by wizardsRelativeTop. -->
+        <attr name="wizard1RelativeTop" format="float" />
+        <!-- Bottom bound of the left Wizard. Superseded by wizardsRelativeBottom. -->
+        <attr name="wizard1RelativeBottom" format="float" />
+        <!-- Left bound of the left Wizard. Superseded by wizardsRelativeDistFromEdge. -->
+        <attr name="wizard1RelativeLeft" format="float" />
+        <!-- Right is calculated, preserving aspect ratio -->
+
+        <!-- Top bound of the right Wizard. Superseded by wizardsRelativeDistFromEdge. -->
+        <attr name="wizard2RelativeTop" format="float" />
+        <!-- Bottom, bound of the right Wizard. Superseded by wizardsRelativeDistFromEdge. -->
+        <attr name="wizard2RelativeBottom" format="float" />
+        <!-- Right bound of the right Wizard. Superseded by wizardsRelativeDistFromEdge. -->
+        <attr name="wizard2RelativeRight" format="float" />
+        <!-- Left is calculated, preserving aspect ratio -->
+    </declare-styleable>
+</resources>

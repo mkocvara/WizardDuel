@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GameActivity">
+
+    <com.mk.wizardduel.GameView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        app:wizardsRelativeTop="0.35"
+        app:wizardsRelativeBottom="0.65"
+        app:wizardsRelativeDistFromEdge="0.01"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
