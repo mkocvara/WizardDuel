@@ -1,6 +1,5 @@
-package com.example.wizardduel;
+package com.mk.wizardduel;
 
-import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;

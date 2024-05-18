@@ -1,4 +1,4 @@
-package com.example.wizardduel;
+package com.mk.wizardduel;
 
 import androidx.appcompat.app.AppCompatActivity;
 

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.wizardduel"
+    namespace = "com.mk.wizardduel"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.wizardduel"
+        applicationId = "com.mk.wizardduel"
         minSdk = 23
         targetSdk = 34
         versionCode = 1

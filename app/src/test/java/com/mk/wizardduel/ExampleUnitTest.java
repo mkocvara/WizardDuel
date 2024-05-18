@@ -1,4 +1,4 @@
-package com.example.wizardduel;
+package com.mk.wizardduel;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.example.wizardduel;
+package com.mk.wizardduel;
 
 import android.content.Context;
 import android.content.SharedPreferences;

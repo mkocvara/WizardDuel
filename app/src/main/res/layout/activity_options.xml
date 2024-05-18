@@ -41,7 +41,7 @@
         app:layout_constraintBottom_toBottomOf="@id/options_guide_upperhoriz"
         />
 
-    <com.example.wizardduel.ToggleButtonDual
+    <com.mk.wizardduel.ToggleButtonDual
         android:id="@+id/options_tglbtn_sound"
         style="@style/UI.Button.Toggle"
         android:checked="true"
@@ -68,7 +68,7 @@
         app:layout_constraintBottom_toBottomOf="@id/options_guide_lowerhoriz"
         />
 
-    <com.example.wizardduel.ToggleButtonDual
+    <com.mk.wizardduel.ToggleButtonDual
         android:id="@+id/options_tglbtn_anim"
         style="@style/UI.Button.Toggle"
         android:checked="true"
