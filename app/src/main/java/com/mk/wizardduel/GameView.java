@@ -9,6 +9,7 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -17,23 +18,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
+import java.util.ArrayList;
+
+import kotlin.NotImplementedError;
+
 public class GameView extends View
 {
-	private Bitmap mW1Bitmap, mW2Bitmap;
 	private Paint mGameObjectPaint;
-	private int mPlayer1Colour, mPlayer2Colour;
 	private ColorFilter mPlayer1ColourFilter, mPlayer2ColourFilter;
 	private RectF mViewBounds = new RectF(),
-					mWizard1Bounds = new RectF(),
-					mWizard2Bounds = new RectF(),
 					mWizard1RelativeBounds,
 					mWizard2RelativeBounds;
 
-	public GameView(Context context)
-	{
-		super(context);
-		init();
-	}
+	private Wizard mW1, mW2;
+
 
 	public GameView(Context context, @Nullable AttributeSet attrs)
 	{
@@ -49,12 +47,13 @@ public class GameView extends View
 	{
 		super(context, attrs, defStyleAttr, defStyleRes);
 
+		// Extract attributes
 		final TypedArray attributes = context.obtainStyledAttributes(
 				attrs, R.styleable.GameView, defStyleAttr, defStyleRes);
 
 		final float NOT_SET = -1.f;
 		float wBothTop, wBothBottom, wBothEdge, w1Top, w1Bottom, w1Left, w2Top, w2Bottom, w2Right;
-		wBothTop = wBothBottom = wBothEdge = w1Top = w1Bottom = w1Left = w2Top = w2Bottom = w2Right = NOT_SET;
+		w1Top = w1Bottom = w1Left = w2Top = w2Bottom = w2Right = NOT_SET;
 
 		try
 		{
@@ -62,12 +61,12 @@ public class GameView extends View
 			wBothBottom = attributes.getFloat(R.styleable.GameView_wizardsRelativeBottom, NOT_SET);
 			wBothEdge = attributes.getFloat(R.styleable.GameView_wizardsRelativeDistFromEdge, NOT_SET);
 
-			w1Top = (wBothTop == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeTop, NOT_SET) : wBothTop;
-			w2Top = (wBothTop == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeTop, NOT_SET) : wBothTop;
-			w1Bottom = (wBothBottom == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeBottom, NOT_SET) : wBothBottom;
-			w2Bottom = (wBothBottom == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeBottom, NOT_SET) : wBothBottom;
-			w1Left =  (wBothEdge == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, NOT_SET)  : wBothEdge;
-			w2Right = (wBothEdge == -1.f) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
+			w1Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeTop, NOT_SET) : wBothTop;
+			w2Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeTop, NOT_SET) : wBothTop;
+			w1Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeBottom, NOT_SET) : wBothBottom;
+			w2Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeBottom, NOT_SET) : wBothBottom;
+			w1Left =  (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, NOT_SET)  : wBothEdge;
+			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
 		}
 		finally
 		{
@@ -93,10 +92,17 @@ public class GameView extends View
 		BitmapDrawable wizardDrawable = (BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.wizard, null);
 		assert wizardDrawable != null : "GameView: Wizard drawable could not be loaded.";
 
-		mW1Bitmap = wizardDrawable.getBitmap();
-		mW2Bitmap = Utils.makeFlippedBitmap(mW1Bitmap, true, false);
+		mW1 = new Wizard(wizardDrawable);
+		mW2 = new Wizard(wizardDrawable);
 
 		setupPaints();
+	}
+
+	public ArrayList<AnimationDrawable> getAllAnims()
+	{
+		throw new NotImplementedError();
+
+		// TODO: return mGame.getAllAnims();
 	}
 
 	@Override
@@ -110,23 +116,21 @@ public class GameView extends View
 		float ww = (float)w - xpad;
 		float hh = (float)h - ypad;
 
-		// Calculate the needed bounds
+		// Calculate the view's bounds
 		mViewBounds.set(0.f, 0.f, ww, hh);
 
-		float w1Width = getWizardWidth(1);
-		float w2Width = getWizardWidth(2);
+		// Set Wizard sizes and positions
+		int scaledHeight1 = (int)(mViewBounds.height() * (mWizard1RelativeBounds.bottom - mWizard1RelativeBounds.top));
+		mW1.setHeight(scaledHeight1, true);
 
-		mWizard1Bounds.set(
-				ww * mWizard1RelativeBounds.left,
-				hh * mWizard1RelativeBounds.top,
-				ww * mWizard1RelativeBounds.left + w1Width,
-				hh * mWizard1RelativeBounds.bottom);
+		int scaledHeight2 = (int)(mViewBounds.height() * (mWizard2RelativeBounds.bottom - mWizard2RelativeBounds.top));
+		mW2.setHeight(scaledHeight2, true);
 
-		mWizard2Bounds.set(
-				ww * mWizard2RelativeBounds.right - w2Width,
-				hh * mWizard2RelativeBounds.top,
-				ww * mWizard2RelativeBounds.right,
-				hh * mWizard2RelativeBounds.bottom);
+		mW1.pos.set((int)(ww * mWizard1RelativeBounds.left),  (int)(hh * mWizard1RelativeBounds.top));
+		mW2.pos.set((int)(ww * mWizard2RelativeBounds.right), (int)(hh * mWizard2RelativeBounds.top));
+
+		mW2.anchor.set(0.f, 1.f);
+		mW2.rotation = 180.f;
 	}
 
 	@Override
@@ -135,10 +139,12 @@ public class GameView extends View
 		super.onDraw(canvas);
 
 		mGameObjectPaint.setColorFilter(mPlayer1ColourFilter);
-		canvas.drawBitmap(mW1Bitmap, null, mWizard1Bounds, mGameObjectPaint);
+		mW1.update();
+		mW1.draw(canvas, mGameObjectPaint);
 
 		mGameObjectPaint.setColorFilter(mPlayer2ColourFilter);
-		canvas.drawBitmap(mW2Bitmap, null, mWizard2Bounds, mGameObjectPaint);
+		mW2.update();
+		mW2.draw(canvas, mGameObjectPaint);
 	}
 
 	private void setupPaints()
@@ -147,18 +153,5 @@ public class GameView extends View
 		mPlayer2ColourFilter = new LightingColorFilter(Color.RED, 1);
 
 		mGameObjectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	}
-
-	private float getWizardWidth(int i)
-	{
-		RectF relativeBounds = (i == 1) ? mWizard1RelativeBounds : mWizard2RelativeBounds;
-
-		int wizardDrawableHeight = mW1Bitmap.getHeight();
-		int wizardDrawableWidth = mW1Bitmap.getWidth();
-			// Note: dimensions of both W1 and W2 bitmaps are equal
-
-		float scaledHeight = mViewBounds.height() * (relativeBounds.bottom - relativeBounds.top);
-		float scale = scaledHeight / wizardDrawableHeight;
-		return wizardDrawableWidth * scale;
 	}
 }
