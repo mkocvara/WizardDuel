@@ -1,60 +1,63 @@
 package com.mk.wizardduel.gameobjects;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
+
+import androidx.annotation.DrawableRes;
 
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.WizardApplication;
 
+import kotlin.random.Random;
+
 public class Wizard extends GameObject
 {
-	enum DrawType {
-		Animation,
-		Bitmap
-	}
-
-	private DrawType mDrawType; // TODO reevaluate the necessity (looking superseded with getAnim())
+	final private @DrawableRes int[] drawablePool = {
+			R.drawable.wizard1_anim,
+			R.drawable.wizard2_anim,
+			R.drawable.wizard3_anim,
+			R.drawable.wizard4_anim,
+			R.drawable.wizard5_anim
+	};
 
 	public Wizard()
 	{
-		Drawable wizardDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.wizard);
+		int randDrawableIndex = Random.Default.nextInt(drawablePool.length);
+		int drawableRes = drawablePool[randDrawableIndex];
+		Drawable wizardDrawable = WizardApplication.getDrawableFromResourceId(drawableRes);
 		if (wizardDrawable == null)
 		{
+			Log.e("Resource", "Wizard: Drawable resource not found, wizard can't be rendered.");
 			destroy();
 			return;
 		}
-
-		if (wizardDrawable instanceof BitmapDrawable)
-			mDrawType = DrawType.Bitmap;
-		else if (wizardDrawable instanceof AnimationDrawable)
-			mDrawType = DrawType.Animation;
 
 		init(wizardDrawable);
 	}
 
 	public Wizard(BitmapDrawable drawable)
 	{
-		mDrawType = DrawType.Bitmap;
 		init(drawable);
 	}
 
 	public Wizard(AnimationDrawable drawable)
 	{
-		mDrawType = DrawType.Animation;
 		init(drawable);
 	}
 
 	private void init(Drawable drawable)
 	{
 		mDrawable = drawable;
-		setHeight(drawable.getIntrinsicHeight());
-		setWidth(drawable.getIntrinsicWidth());
 
-		collidable = true;
+		int h = drawable.getIntrinsicHeight();
+		int w = drawable.getIntrinsicWidth();
+
+		setHeight(h);
+		setWidth(w);
+
+		collideable = true;
 		setActive(true);
 	}
 
@@ -63,14 +66,7 @@ public class Wizard extends GameObject
 	{
 		super.update(deltaTime);
 		// Do nothing, Wizards simply stay in their spots and focus on casting spells.
-	}
 
-	@Override
-	public void draw(Canvas canvas, Paint paint)
-	{
-		Drawable current = mDrawable.getCurrent();
-		Bitmap bitmap = ((BitmapDrawable) current).getBitmap();
-		transformAndDrawBitmap(canvas, paint, bitmap);
 	}
 
 	@Override

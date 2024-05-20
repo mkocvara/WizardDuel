@@ -30,7 +30,7 @@ public class GameActivity extends AppCompatActivity
 			GameService.GameBinder binder = (GameService.GameBinder) service;
 			mGame = binder.getService();
 			Log.i("DEBUG", "GameActivity: GameService has been bound.");
-			mGame.init(GameActivity.this);
+			mGame.bind(GameActivity.this);
 			mGame.setGameTickCallback(GameActivity.this::gameTick);
 			mGameView.init(mGame);
 		}

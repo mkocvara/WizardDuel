@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/shield_frame1" android:duration="@integer/anim_delay" />
+    <item android:drawable="@drawable/shield_frame2" android:duration="@integer/anim_delay" />
+</animation-list>

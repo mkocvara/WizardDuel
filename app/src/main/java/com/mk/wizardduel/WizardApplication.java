@@ -21,6 +21,7 @@ public class WizardApplication extends Application
 
 	public static Drawable getDrawableFromResourceId(int rId)
 	{
-		return ResourcesCompat.getDrawable(mInstance.getResources(), rId, null);
+		Drawable d = ResourcesCompat.getDrawable(mInstance.getResources(), rId, null);
+		return d;
 	}
 }

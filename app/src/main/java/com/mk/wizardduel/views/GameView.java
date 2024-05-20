@@ -3,31 +3,22 @@ package com.mk.wizardduel.views;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.LightingColorFilter;
-import android.graphics.Paint;
 import android.graphics.RectF;
-import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mk.wizardduel.GameAttributes;
 import com.mk.wizardduel.R;
-import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.services.GameService;
-
-import java.util.ArrayList;
-
-import kotlin.NotImplementedError;
 
 public class GameView extends View
 {
 	private GameService mGame;
-	final private RectF mViewBounds = new RectF(),
-					mWizard1RelativeBounds,
-					mWizard2RelativeBounds;
+	final private GameAttributes mGameAttributes = new GameAttributes();
 
 	private boolean initialised = false;
 
@@ -79,27 +70,17 @@ public class GameView extends View
 			assert(w2Right != NOT_SET) : assertErrorMessage;
 		}
 
-		mWizard1RelativeBounds = new RectF(w1Left, w1Top, 0f, w1Bottom);
-		mWizard2RelativeBounds = new RectF(0f, w2Top, w2Right, w2Bottom);
-
-		//init();
+		mGameAttributes.wizard1RelativeBounds = new RectF(w1Left, w1Top, 0.f, w1Bottom);
+		mGameAttributes.wizard2RelativeBounds = new RectF(0.f, w2Top, w2Right, w2Bottom);
 	}
 
 	/** Must be called by parent activity, passing a reference to a running GameService */
 	public void init(GameService gameService)
 	{
+		mGameAttributes.gameView = this;
 		mGame = gameService;
-
-		createWizards();
-
+		mGame.init(mGameAttributes);
 		initialised = true;
-	}
-
-	public ArrayList<AnimationDrawable> getAllAnims()
-	{
-		throw new NotImplementedError();
-
-		// TODO: return mGame.getAllAnims();
 	}
 
 	@Override
@@ -107,14 +88,14 @@ public class GameView extends View
 		super.onSizeChanged(w, h, oldw, oldh);
 
 		// Account for padding (even though there should be none).
-		float xpad = (float)(getPaddingLeft() + getPaddingRight());
-		float ypad = (float)(getPaddingTop() + getPaddingBottom());
+		int xpad = getPaddingLeft() + getPaddingRight();
+		int ypad = getPaddingTop() + getPaddingBottom();
 
-		float ww = (float)w - xpad;
-		float hh = (float)h - ypad;
+		int ww = w - xpad;
+		int hh = h - ypad;
 
-		// Calculate the view's bounds
-		mViewBounds.set(0.f, 0.f, ww, hh);
+		// Set the view's bounds
+		mGameAttributes.viewBounds.set(0, 0, ww, hh);
 	}
 
 	@Override
@@ -128,33 +109,16 @@ public class GameView extends View
 		mGame.draw(canvas);
 	}
 
-	private void createWizards()
+	@Override
+	public void invalidateDrawable(@NonNull Drawable drawable)
 	{
-		Wizard wizard1 = new Wizard();
-		Wizard wizard2 = new Wizard();
+		// Do nothing! Invalidation is handled by the game loop.
+	}
 
-		// Set Wizard sizes and positions
-		int scaledHeight1 = (int)(mViewBounds.height() * (mWizard1RelativeBounds.bottom - mWizard1RelativeBounds.top));
-		wizard1.setHeight(scaledHeight1, true);
-
-		int scaledHeight2 = (int)(mViewBounds.height() * (mWizard2RelativeBounds.bottom - mWizard2RelativeBounds.top));
-		wizard2.setHeight(scaledHeight2, true);
-
-		wizard1.pos.set((int)(mViewBounds.width() * mWizard1RelativeBounds.left),  (int)(mViewBounds.height() * mWizard1RelativeBounds.top));
-		wizard2.pos.set((int)(mViewBounds.width() * mWizard2RelativeBounds.right), (int)(mViewBounds.height() * mWizard2RelativeBounds.top));
-
-		wizard2.anchor.set(0.f, 1.f);
-		wizard2.rotation = 180.f;
-
-		Paint paint1 = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paint1.setColorFilter(new LightingColorFilter(Color.BLUE, 1));
-		wizard1.paint = paint1;
-
-		Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paint2.setColorFilter(new LightingColorFilter(Color.RED, 1));
-		wizard2.paint = paint2;
-
-		mGame.addObject(wizard1);
-		mGame.addObject(wizard2);
+	@Override
+	protected boolean verifyDrawable(@NonNull Drawable who)
+	{
+		super.verifyDrawable(who);
+		return true;
 	}
 }

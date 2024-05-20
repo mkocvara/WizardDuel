@@ -11,8 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        app:wizardsRelativeBottom="0.65"
+        app:wizardsRelativeTop="0.38"
+        app:wizardsRelativeBottom="0.62"
         app:wizardsRelativeDistFromEdge="0.01"
-        app:wizardsRelativeTop="0.35" />
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

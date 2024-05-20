@@ -18,6 +18,6 @@
     <!-- Options Activity UI -->
     <string name="options_txt_sound">Sound</string>
     <string name="options_txt_anim">Animations</string>
-    <string name="options_txt_credits">Made by Marek Kočvara for the KF7008 Mobile Application Programming module at Northumbria University.\n\nUI \"art\" by Marek Kočvara\nIn-game art &amp; title art by František Šín</string>
+    <string name="options_txt_credits">Made by Marek Kočvara for the KF7008 Mobile Application Programming module at Northumbria University.\n\nUI \"art\" by Marek Kočvara\nIn-game art by František Šín</string>
     <string name="options_btn_back">&lt; Back</string>
 </resources>

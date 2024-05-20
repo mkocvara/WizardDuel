@@ -62,7 +62,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 * Add multiple AnimationDrawables to the list of handled animations.
 	 * @param anims The AnimationDrawables to add.
 	 */
-	public void addAnim(@NonNull ArrayList<AnimationDrawable> anims)
+	public void addAnims(@NonNull ArrayList<AnimationDrawable> anims)
 	{
 		for (AnimationDrawable a : anims)
 			addAnim(a);
@@ -72,7 +72,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 * Add multiple AnimationDrawables to the list of handled animations.
 	 * @param anims The AnimationDrawables to add.
 	 */
-	public void addAnim(@NonNull AnimationDrawable[] anims)
+	public void addAnims(@NonNull AnimationDrawable[] anims)
 	{
 		for (AnimationDrawable a : anims)
 			addAnim(a);
@@ -135,7 +135,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 * Remove multiple AnimationDrawables to the list of handled animations.
 	 * @param anims The AnimationDrawables to remove.
 	 */
-	public void removeAnim(@NonNull ArrayList<AnimationDrawable> anims)
+	public void removeAnims(@NonNull ArrayList<AnimationDrawable> anims)
 	{
 		for (AnimationDrawable a : anims)
 			removeAnim(a);
@@ -145,7 +145,7 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 * Remove multiple AnimationDrawables to the list of handled animations.
 	 * @param anims The AnimationDrawables to remove.
 	 */
-	public void removeAnim(@NonNull AnimationDrawable[] anims)
+	public void removeAnims(@NonNull AnimationDrawable[] anims)
 	{
 		for (AnimationDrawable a : anims)
 			removeAnim(a);
@@ -214,6 +214,12 @@ public class AnimHandler implements DefaultLifecycleObserver
 	public void onStop(@NonNull LifecycleOwner owner)
 	{
 		if (mPlaying) stopAnimating();
+	}
+
+	@Override
+	public void onDestroy(@NonNull LifecycleOwner owner)
+	{
+		mAnims.clear();
 	}
 
 	public boolean areAnimsPlaying()

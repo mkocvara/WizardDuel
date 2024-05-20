@@ -1,8 +1,6 @@
 package com.mk.wizardduel.gameobjects;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -11,6 +9,8 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
+
+import androidx.annotation.ColorInt;
 
 public abstract class GameObject
 {
@@ -21,9 +21,6 @@ public abstract class GameObject
 		REMOVED
 	}
 
-	public static Paint defaultPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-	public Paint paint = GameObject.defaultPaint;
 	public Point pos = new Point();
 	public PointF anchor = new PointF(0.f,0.f);
 	public PointF scale = new PointF(1.f, 1.f);
@@ -31,24 +28,23 @@ public abstract class GameObject
 	 * Rotation in degrees.
 	 */
 	public float rotation = 0.f;
-	public boolean collidable = false;
+	public boolean collideable = false;
 
 	protected Drawable mDrawable;
 
-	private RectF mCachedViewBounds = null;
-	private Matrix mCachedBitmapTransform = null;
+	private RectF mCachedWorldBounds = null;
 	private Region mChachedCollisionRegion = null;
 	private int mHeight = -1, mWidth = -1;
 	private State mOjectState = State.INACTIVE;
 
 	/**
-	 * Calculates this object's bounds as a Rect.
+	 * Calculates this object's bounds as a Rect within the world (GameView).
 	 * @return Rect object representing the contextualised bounds.
 	 */
-	public RectF getViewBounds()
+	public RectF getWorldBounds()
 	{
-		if (mCachedViewBounds != null)
-			return mCachedViewBounds;
+		if (mCachedWorldBounds != null)
+			return mCachedWorldBounds;
 
 		RectF viewBounds = new RectF();
 		viewBounds.right = mWidth;
@@ -57,7 +53,7 @@ public abstract class GameObject
 		Matrix transform = getTransform(mWidth, mHeight);
 		transform.mapRect(viewBounds);
 
-		mCachedViewBounds = viewBounds;
+		mCachedWorldBounds = viewBounds;
 		return viewBounds;
 	}
 
@@ -87,7 +83,7 @@ public abstract class GameObject
 		path.lineTo(corners[6], corners[7]);
 		path.lineTo(corners[0], corners[1]);
 
-		RectF bounds = getViewBounds();
+		RectF bounds = getWorldBounds();
 		Rect clipRect = new Rect(
 				(int) bounds.left,
 				(int) bounds.top,
@@ -103,6 +99,14 @@ public abstract class GameObject
 
 		mChachedCollisionRegion = colRegion;
 		return colRegion;
+	}
+
+	public void setTint(@ColorInt int colour)
+	{
+		if (mDrawable == null)
+			return;
+
+		mDrawable.setTint(colour);
 	}
 
 	public void setHeight(int newHeight) { setHeight(newHeight, false); }
@@ -159,33 +163,37 @@ public abstract class GameObject
 	 */
 	public void update(double deltaTime)
 	{
-		mCachedViewBounds = null;
-		mCachedBitmapTransform = null;
+		mCachedWorldBounds = null;
 		mChachedCollisionRegion = null;
 	}
 
 	/**
-	 * Draws the object's drawable on the <code>canvas</code> using the provided <code>paint</code>.
-	 * @param canvas Canvas object to draw on.
-	 * @param overridePaint Paint object to draw the drawable with.
-	 */
-	public abstract void draw(Canvas canvas, Paint overridePaint);
-	/**
-	 * Draws the object's drawable on the <code>canvas</code> using the objects own paint.
+	 * Draws the object's drawable on the <code>canvas</code> using the object's tint.
 	 * @param canvas Canvas object to draw on.
 	 */
-	public final void draw(Canvas canvas) { draw(canvas, paint); }
+	public void draw(Canvas canvas)
+	{
+		Matrix transform = getTransform(mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
+		Rect bounds = new Rect(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
+		RectF mappedBounds = new RectF(bounds);
+		transform.mapRect(mappedBounds);
+		Rect drawBounds = new Rect();
+		mappedBounds.round(drawBounds);
+
+		Drawable drawable = mDrawable.getCurrent();
+		drawable.setBounds(drawBounds);
+
+		mDrawable.setBounds(drawBounds);
+
+		canvas.save();
+		canvas.rotate(rotation, drawBounds.exactCenterX(), drawBounds.exactCenterY());
+		drawable.draw(canvas);
+		mDrawable.draw(canvas);
+		canvas.restore();
+	}
 
 	public abstract void handleCollision(GameObject other);
 
-	protected Matrix getTransform(Bitmap bitmap)
-	{
-		if (mCachedBitmapTransform != null)
-			return mCachedBitmapTransform;
-
-		mCachedBitmapTransform = getTransform(bitmap.getWidth(), bitmap.getHeight());
-		return mCachedBitmapTransform;
-	}
 	protected Matrix getTransform(float width, float height)
 	{
 		Matrix transform = new Matrix();
@@ -218,22 +226,5 @@ public abstract class GameObject
 		transform.postTranslate(pos.x, pos.y);
 
 		return transform;
-	}
-
-	protected void transformAndDrawBitmap(Canvas canvas, Paint paint, Bitmap bitmap)
-	{
-		Matrix transform = getTransform(bitmap);
-		canvas.drawBitmap(bitmap, transform, paint);
-
-		/*/ DEBUG TEST collision region by drawing it. -- It draws the inverse,
-		// somewhat sure if it's the draw's and not the region's fault though.
-		// Will probably find out for sure when I make the fireballs and implement
-		// actual collisions.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-		{
-			canvas.clipOutPath(getCollisionRegion().getBoundaryPath());
-			canvas.drawColor(0x44ff1122);
-		}
-		*/
 	}
 }
