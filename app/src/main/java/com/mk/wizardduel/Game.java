@@ -28,7 +28,7 @@ public class Game extends ViewModel
 
 	public int getNumObjects() { return mGameObjects.size(); }
 
-	public void update( /*double deltaTime*/ )
+	public void update( double deltaTime )
 	{
 		Log.i("DEBUG", "Game.update() called.");
 
@@ -37,7 +37,7 @@ public class Game extends ViewModel
 		{
 			GameObject go = it.next();
 			if (go.getObjectState() == GameObject.State.ACTIVE)
-				go.update();
+				go.update(deltaTime);
 
 			if (go.getObjectState() == GameObject.State.REMOVED)
 				it.remove();

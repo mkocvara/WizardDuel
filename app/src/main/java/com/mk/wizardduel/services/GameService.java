@@ -1,13 +1,12 @@
 package com.mk.wizardduel.services;
 
-import static java.lang.Thread.sleep;
-
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Choreographer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,16 +16,57 @@ import androidx.lifecycle.ViewModelProvider;
 import com.mk.wizardduel.Game;
 import com.mk.wizardduel.gameobjects.GameObject;
 
-public class GameService extends Service
+public class GameService extends Service implements Choreographer.FrameCallback
 {
-
 	public class GameBinder extends Binder
 	{
 		public GameService getService() { return GameService.this; }
 	}
 
+	public class GameThread extends Thread
+	{
+		private double mDeltaTime = 0;
+		private boolean mShouldStop = false;
+		private boolean mPaused = false;
+		private long mDebugFrameCount = 0;
+
+		public GameThread()
+		{
+			super();
+			setName("Game Thread");
+		}
+
+		@Override
+		public void run()
+		{
+			while (!mShouldStop)
+			{
+				if (!mPaused && mDeltaTime != 0)
+				{
+					mGame.update(mDeltaTime);
+					mDeltaTime = 0;
+				}
+			}
+		}
+
+		public void frameTick(double deltaTime)
+		{
+			if (!isAlive() || mShouldStop)
+				return;
+
+			mDeltaTime = deltaTime;
+			Log.i("DEBUG", "GameThread.frameTick() called; Frame " + ++mDebugFrameCount + "; deltaTime == " + deltaTime);
+		}
+
+		public void terminate() { mShouldStop = true; }
+		public void setPaused(boolean paused) { mPaused = paused; }
+	}
+
+	private final GameThread mGameThread = new GameThread();
+
 	private final IBinder mBinder = new GameBinder();
 	private Runnable mGameTickCallback = null;
+	private double mPreviousFrameTime = 0;
 	private Game mGame;
 	private boolean mInitialised = false; // TODO use properly
 
@@ -50,41 +90,36 @@ public class GameService extends Service
 		mInitialised = true;
 
 		Log.i("DEBUG", "GameService.init() called; mGame.getNumObjects() == " + mGame.getNumObjects());
-		startGameThread(); // TODO temp
+
+		// Start game thread and choreographer sync
+		Choreographer.getInstance().postFrameCallback(this);
+		mGameThread.start();
 	}
 
-	private void startGameThread() // TODO temp
+	@Override
+	public void doFrame(long frameTimeNanos)
 	{
-		Runnable updateLoop = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				while (true)
-				{
-					try
-					{
-						sleep(100);
-						mGame.update();
-						if (mGameTickCallback != null)
-							mGameTickCallback.run();
-					} catch (InterruptedException e)
-					{
-						throw new RuntimeException(e);
-					}
-				}
-			}
-		};
+		double deltaTime = ((double)frameTimeNanos - mPreviousFrameTime) / 1000000000.0;
 
-		Thread updateThread = new Thread(updateLoop);
-		updateThread.start();
+		// Skip frames if there's too much of a delay.
+		if (deltaTime <= 0.1)
+		{
+			mGameThread.frameTick(deltaTime);
+			mGameTickCallback.run();
+		}
+		else
+		{
+			Log.i("DEBUG", "GameService.doFrame() skipped a frame!");
+		}
+
+		mPreviousFrameTime = frameTimeNanos;
+		Choreographer.getInstance().postFrameCallback(this);
 	}
 
 	@Override
 	public void onCreate()
 	{
 		super.onCreate();
-
 		Log.i("DEBUG", "GameService.onCreate() called.");
 	}
 
@@ -92,8 +127,7 @@ public class GameService extends Service
 	public void onDestroy()
 	{
 		super.onDestroy();
-
-		// TODO clean up game thread?
+		mGameThread.terminate();
 		Log.i("DEBUG", "GameService.onDestroy() called.");
 	}
 

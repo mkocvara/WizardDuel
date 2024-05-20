@@ -59,8 +59,9 @@ public class Wizard extends GameObject
 	}
 
 	@Override
-	public void update()
+	public void update(double deltaTime)
 	{
+		super.update(deltaTime);
 		// Do nothing, Wizards simply stay in their spots and focus on casting spells.
 	}
 

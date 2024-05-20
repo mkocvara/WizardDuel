@@ -36,7 +36,7 @@ public abstract class GameObject
 	protected Drawable mDrawable;
 
 	private RectF mCachedViewBounds = null;
-	private Matrix mCachedTransform = null;
+	private Matrix mCachedBitmapTransform = null;
 	private Region mChachedCollisionRegion = null;
 	private int mHeight = -1, mWidth = -1;
 	private State mOjectState = State.INACTIVE;
@@ -157,10 +157,10 @@ public abstract class GameObject
 	/**
 	 * Called every frame by the Game manager. Any inner calculations or actions should happen here.
 	 */
-	public void update()
+	public void update(double deltaTime)
 	{
 		mCachedViewBounds = null;
-		mCachedTransform = null;
+		mCachedBitmapTransform = null;
 		mChachedCollisionRegion = null;
 	}
 
@@ -180,14 +180,11 @@ public abstract class GameObject
 
 	protected Matrix getTransform(Bitmap bitmap)
 	{
-		// ~~Keep an eye on this caching, in case it goes rogue again in the future.~~
-		// There is a minor issue still, BUT I think it will go away when an
-		// actualy update + draw loop is established.
-		// Give it another go then.
-		//if (mCachedTransform != null)
-			//return mCachedTransform;
+		if (mCachedBitmapTransform != null)
+			return mCachedBitmapTransform;
 
-		return getTransform(bitmap.getWidth(), bitmap.getHeight());
+		mCachedBitmapTransform = getTransform(bitmap.getWidth(), bitmap.getHeight());
+		return mCachedBitmapTransform;
 	}
 	protected Matrix getTransform(float width, float height)
 	{
@@ -220,7 +217,6 @@ public abstract class GameObject
 		transform.postRotate(rotation);
 		transform.postTranslate(pos.x, pos.y);
 
-		mCachedTransform = transform;
 		return transform;
 	}
 

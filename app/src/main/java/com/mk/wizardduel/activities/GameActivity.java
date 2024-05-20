@@ -14,8 +14,6 @@ import com.mk.wizardduel.services.GameService;
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.views.GameView;
 
-import java.util.function.Consumer;
-
 public class GameActivity extends AppCompatActivity
 {
 	/** Service running the game's logic. Runs on a worker thread. */
@@ -76,6 +74,6 @@ public class GameActivity extends AppCompatActivity
 
 	private void gameTick()
 	{
-		mGameView.postInvalidate();
+		mGameView.postInvalidateOnAnimation();
 	}
 }
