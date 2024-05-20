@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -7,6 +7,11 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+
+import com.mk.wizardduel.R;
+import com.mk.wizardduel.utils.SimplePreferences;
+import com.mk.wizardduel.views.ToggleButtonDual;
+import com.mk.wizardduel.utils.AnimHandler;
 
 public class OptionsActivity extends AppCompatActivity implements View.OnClickListener
 {

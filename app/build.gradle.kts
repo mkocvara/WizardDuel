@@ -42,4 +42,7 @@ dependencies {
 
     // added
     implementation("androidx.preference:preference:1.2.1")
+    val lifecycleVersion = "2.7.0"
+    implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion")
 }

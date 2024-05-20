@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

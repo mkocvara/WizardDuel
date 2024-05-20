@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import com.mk.wizardduel.R;
+import com.mk.wizardduel.utils.AnimHandler;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener
 {

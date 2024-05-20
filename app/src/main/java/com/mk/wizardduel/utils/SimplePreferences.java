@@ -1,9 +1,12 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
+
+import com.mk.wizardduel.R;
+import com.mk.wizardduel.WizardApplication;
 
 /**
  * Simple API to handle this application's few settings.

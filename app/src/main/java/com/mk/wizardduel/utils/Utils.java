@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;

@@ -1,22 +1,22 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
+
+import com.mk.wizardduel.R;
+import com.mk.wizardduel.gameobjects.Wizard;
+import com.mk.wizardduel.services.GameService;
 
 import java.util.ArrayList;
 
@@ -24,14 +24,12 @@ import kotlin.NotImplementedError;
 
 public class GameView extends View
 {
-	private Paint mGameObjectPaint;
-	private ColorFilter mPlayer1ColourFilter, mPlayer2ColourFilter;
-	private RectF mViewBounds = new RectF(),
+	private GameService mGame;
+	final private RectF mViewBounds = new RectF(),
 					mWizard1RelativeBounds,
 					mWizard2RelativeBounds;
 
-	private Wizard mW1, mW2;
-
+	private boolean initialised = false;
 
 	public GameView(Context context, @Nullable AttributeSet attrs)
 	{
@@ -84,18 +82,17 @@ public class GameView extends View
 		mWizard1RelativeBounds = new RectF(w1Left, w1Top, 0f, w1Bottom);
 		mWizard2RelativeBounds = new RectF(0f, w2Top, w2Right, w2Bottom);
 
-		init();
+		//init();
 	}
 
-	private void init()
+	/** Must be called by parent activity, passing a reference to a running GameService */
+	public void init(GameService gameService)
 	{
-		BitmapDrawable wizardDrawable = (BitmapDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.wizard, null);
-		assert wizardDrawable != null : "GameView: Wizard drawable could not be loaded.";
+		mGame = gameService;
 
-		mW1 = new Wizard(wizardDrawable);
-		mW2 = new Wizard(wizardDrawable);
+		createWizards();
 
-		setupPaints();
+		initialised = true;
 	}
 
 	public ArrayList<AnimationDrawable> getAllAnims()
@@ -118,19 +115,6 @@ public class GameView extends View
 
 		// Calculate the view's bounds
 		mViewBounds.set(0.f, 0.f, ww, hh);
-
-		// Set Wizard sizes and positions
-		int scaledHeight1 = (int)(mViewBounds.height() * (mWizard1RelativeBounds.bottom - mWizard1RelativeBounds.top));
-		mW1.setHeight(scaledHeight1, true);
-
-		int scaledHeight2 = (int)(mViewBounds.height() * (mWizard2RelativeBounds.bottom - mWizard2RelativeBounds.top));
-		mW2.setHeight(scaledHeight2, true);
-
-		mW1.pos.set((int)(ww * mWizard1RelativeBounds.left),  (int)(hh * mWizard1RelativeBounds.top));
-		mW2.pos.set((int)(ww * mWizard2RelativeBounds.right), (int)(hh * mWizard2RelativeBounds.top));
-
-		mW2.anchor.set(0.f, 1.f);
-		mW2.rotation = 180.f;
 	}
 
 	@Override
@@ -138,20 +122,39 @@ public class GameView extends View
 	{
 		super.onDraw(canvas);
 
-		mGameObjectPaint.setColorFilter(mPlayer1ColourFilter);
-		mW1.update();
-		mW1.draw(canvas, mGameObjectPaint);
+		if (!initialised)
+			return;
 
-		mGameObjectPaint.setColorFilter(mPlayer2ColourFilter);
-		mW2.update();
-		mW2.draw(canvas, mGameObjectPaint);
+		mGame.draw(canvas);
 	}
 
-	private void setupPaints()
+	private void createWizards()
 	{
-		mPlayer1ColourFilter = new LightingColorFilter(Color.BLUE, 1);
-		mPlayer2ColourFilter = new LightingColorFilter(Color.RED, 1);
+		Wizard wizard1 = new Wizard();
+		Wizard wizard2 = new Wizard();
 
-		mGameObjectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		// Set Wizard sizes and positions
+		int scaledHeight1 = (int)(mViewBounds.height() * (mWizard1RelativeBounds.bottom - mWizard1RelativeBounds.top));
+		wizard1.setHeight(scaledHeight1, true);
+
+		int scaledHeight2 = (int)(mViewBounds.height() * (mWizard2RelativeBounds.bottom - mWizard2RelativeBounds.top));
+		wizard2.setHeight(scaledHeight2, true);
+
+		wizard1.pos.set((int)(mViewBounds.width() * mWizard1RelativeBounds.left),  (int)(mViewBounds.height() * mWizard1RelativeBounds.top));
+		wizard2.pos.set((int)(mViewBounds.width() * mWizard2RelativeBounds.right), (int)(mViewBounds.height() * mWizard2RelativeBounds.top));
+
+		wizard2.anchor.set(0.f, 1.f);
+		wizard2.rotation = 180.f;
+
+		Paint paint1 = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint1.setColorFilter(new LightingColorFilter(Color.BLUE, 1));
+		wizard1.paint = paint1;
+
+		Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint2.setColorFilter(new LightingColorFilter(Color.RED, 1));
+		wizard2.paint = paint2;
+
+		mGame.addObject(wizard1);
+		mGame.addObject(wizard2);
 	}
 }

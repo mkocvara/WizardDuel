@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.utils;
 
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;

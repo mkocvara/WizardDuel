@@ -1,4 +1,4 @@
-package com.mk.wizardduel;
+package com.mk.wizardduel.gameobjects;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -14,6 +14,16 @@ import android.graphics.drawable.Drawable;
 
 public abstract class GameObject
 {
+	public enum State
+	{
+		ACTIVE,
+		INACTIVE,
+		REMOVED
+	}
+
+	public static Paint defaultPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+	public Paint paint = GameObject.defaultPaint;
 	public Point pos = new Point();
 	public PointF anchor = new PointF(0.f,0.f);
 	public PointF scale = new PointF(1.f, 1.f);
@@ -21,22 +31,15 @@ public abstract class GameObject
 	 * Rotation in degrees.
 	 */
 	public float rotation = 0.f;
+	public boolean collidable = false;
 
 	protected Drawable mDrawable;
-
-	/*/ Keeping these here in case I need to restore them
-	public Point getPos() { return mPos; }
-	public Rect getBounds() { return mBounds; }
-	public void setPos(Point pos) { mPos = pos; }
-	public void setPos(int x, int y) { mPos.set(x, y); }
-	public void setBounds(Rect bounds) { mBounds = bounds; }
-	/*/
 
 	private RectF mCachedViewBounds = null;
 	private Matrix mCachedTransform = null;
 	private Region mChachedCollisionRegion = null;
-
 	private int mHeight = -1, mWidth = -1;
+	private State mOjectState = State.INACTIVE;
 
 	/**
 	 * Calculates this object's bounds as a Rect.
@@ -130,8 +133,17 @@ public abstract class GameObject
 		mWidth = newWidth;
 	}
 
+	public State getObjectState() { return mOjectState; }
+	public void setActive(boolean active) {
+		if (mOjectState == State.REMOVED)
+			return;
+
+		mOjectState = active ? State.ACTIVE : State.INACTIVE;
+	}
+	public void destroy() { mOjectState = State.REMOVED; }
+
 	/**
-	 * Returns the objects drawable as AnimationDrawable, if it is one.
+	 * Returns the object's drawable as AnimationDrawable, if it is one.
 	 * @return AnimationDrawable associated with this object, or null if there isn't one.
 	 */
 	public AnimationDrawable getAnim()
@@ -153,12 +165,18 @@ public abstract class GameObject
 	}
 
 	/**
-	 * Called every frame by the Game manager. Draws the object's drawable on the <code>canvas</code>
-	 * using the provided <code>paint</code>.
+	 * Draws the object's drawable on the <code>canvas</code> using the provided <code>paint</code>.
 	 * @param canvas Canvas object to draw on.
-	 * @param paint Paint object to draw the drawable with.
+	 * @param overridePaint Paint object to draw the drawable with.
 	 */
-	public abstract void draw(Canvas canvas, Paint paint);
+	public abstract void draw(Canvas canvas, Paint overridePaint);
+	/**
+	 * Draws the object's drawable on the <code>canvas</code> using the objects own paint.
+	 * @param canvas Canvas object to draw on.
+	 */
+	public final void draw(Canvas canvas) { draw(canvas, paint); }
+
+	public abstract void handleCollision(GameObject other);
 
 	protected Matrix getTransform(Bitmap bitmap)
 	{

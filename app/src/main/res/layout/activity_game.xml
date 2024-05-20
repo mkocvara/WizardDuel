@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GameActivity">
+    tools:context=".activities.GameActivity">
 
-    <com.mk.wizardduel.GameView
+    <com.mk.wizardduel.views.GameView
+        android:id="@+id/game_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        app:wizardsRelativeTop="0.35"
         app:wizardsRelativeBottom="0.65"
         app:wizardsRelativeDistFromEdge="0.01"
-        />
+        app:wizardsRelativeTop="0.35" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
