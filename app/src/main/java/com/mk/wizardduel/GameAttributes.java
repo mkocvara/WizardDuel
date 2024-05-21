@@ -9,6 +9,10 @@ public class GameAttributes
 {
 	public GameView gameView = null;
 	public Rect viewBounds = new Rect();
+
 	public RectF wizard1RelativeBounds = new RectF();
 	public RectF wizard2RelativeBounds = new RectF();
+
+	public float fireballRelativeHeight = -1f;
+	//public int fireballSpeed;
 }

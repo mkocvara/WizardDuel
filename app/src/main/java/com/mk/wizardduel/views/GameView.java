@@ -6,6 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.ScaleGestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -17,10 +20,13 @@ import com.mk.wizardduel.services.GameService;
 
 public class GameView extends View
 {
-	private GameService mGame;
+	private GameService mGameService;
 	final private GameAttributes mGameAttributes = new GameAttributes();
 
 	private boolean initialised = false;
+
+	private GestureDetector mGestureDetector;
+	private ScaleGestureDetector mScaleGestureDetector;
 
 	public GameView(Context context, @Nullable AttributeSet attrs)
 	{
@@ -56,6 +62,8 @@ public class GameView extends View
 			w2Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeBottom, NOT_SET) : wBothBottom;
 			w1Left =  (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, NOT_SET)  : wBothEdge;
 			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
+
+			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, -1);
 		}
 		finally
 		{
@@ -78,8 +86,14 @@ public class GameView extends View
 	public void init(GameService gameService)
 	{
 		mGameAttributes.gameView = this;
-		mGame = gameService;
-		mGame.init(mGameAttributes);
+		mGameService = gameService;
+		mGameService.init(mGameAttributes);
+
+		mGestureDetector = new GestureDetector(getContext(), gameService.getGameInputHandler());
+		mGestureDetector.setOnDoubleTapListener(gameService.getGameInputHandler());
+		mScaleGestureDetector = new ScaleGestureDetector(getContext(), gameService.getGameInputHandler());
+		//mScaleGestureDetector.setQuickScaleEnabled(true); // TODO check when implementing shield
+
 		initialised = true;
 	}
 
@@ -106,7 +120,7 @@ public class GameView extends View
 		if (!initialised)
 			return;
 
-		mGame.draw(canvas);
+		mGameService.draw(canvas);
 	}
 
 	@Override
@@ -120,5 +134,15 @@ public class GameView extends View
 	{
 		super.verifyDrawable(who);
 		return true;
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent motionEvent)
+	{
+		boolean result = mGestureDetector.onTouchEvent(motionEvent);
+		result = mScaleGestureDetector.onTouchEvent(motionEvent) || result;
+		result = mGameService.getGameInputHandler().onTouch(motionEvent) || result;
+
+		return result;
 	}
 }

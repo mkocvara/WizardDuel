@@ -18,13 +18,18 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.mk.wizardduel.Game;
 import com.mk.wizardduel.GameAttributes;
+import com.mk.wizardduel.gameobjects.Fireball;
 import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.utils.AnimHandler;
+import com.mk.wizardduel.GameInputManager;
+import com.mk.wizardduel.utils.Vector2D;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GameService extends LifecycleService implements Choreographer.FrameCallback
 {
+
 	public class GameBinder extends Binder
 	{
 		public GameService getService() { return GameService.this; }
@@ -79,11 +84,19 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	private ArrayList<AnimationDrawable> cachedAllAnims;
 	final private Rect mViewBounds = new Rect();
 	private GameAttributes mGameAttributes = null;
+	private GameInputManager mGameInputManager;
+	private Wizard mWizard1, mWizard2;
+	private int mFireballHeight = 0;
+
+	/** Dictionary of fireballs that are being cast (pointers down) keyed by pointer ID. */
+	private final HashMap<Integer, Fireball> mUnreleasedFireballs = new HashMap<>();
 
 	public GameService()
 	{
 		Log.i("DEBUG", "GameService constructor called.");
 	}
+
+	public GameInputManager getGameInputHandler() { return mGameInputManager; }
 
 	public void setGameTickCallback(Runnable mGameTickCallback)
 	{
@@ -107,29 +120,36 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	 * @param gameAttrs <code>GameAttributes</code> object populated with attributes for the game. */
 	public void init(GameAttributes gameAttrs)
 	{
-		mGameAttributes = gameAttrs;
-
 		if (mGame == null)
 		{
 			Log.w("GameService", "GameService has to be bound using bind() before it can be initialised.");
 			return;
 		}
 
+		// Set View Bounds -- must happen at the top
 		mViewBounds.set(gameAttrs.viewBounds);
 
-		// Only create wizards the first time this service is stated to avoid duplicating them
+		// Only create wizards the first time this service is started to avoid duplicating them
 		// every time activity is recreated.
 		if (!mGame.hasStarted())
 			createWizards(gameAttrs);
 
-		mAnimHandler = new AnimHandler(getLifecycle(), true);
-		getLifecycle().addObserver(mAnimHandler);
-		cachedAllAnims = mGame.getAllAnims();
-		handleAnims(cachedAllAnims);
+		// Unpack necessary attributes
+		mGameAttributes = gameAttrs;
+		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
+		mFireballHeight = (int) ((fireballRelativeHeight != -1) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizard1.getHeight() * 0.3f));
 
 		// Start game thread and choreographer time sync
 		Choreographer.getInstance().postFrameCallback(this);
 		mGameThread.start();
+
+		// Start various components
+		mAnimHandler = new AnimHandler(getLifecycle(), true); // TODO anim list doesn't update: fix
+		getLifecycle().addObserver(mAnimHandler);
+		cachedAllAnims = mGame.getAllAnims();
+		handleAnims(cachedAllAnims);
+
+		mGameInputManager = new GameInputManager(this);
 
 		mInitialised = true;
 	}
@@ -205,7 +225,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			handleAnims(animsToAdd);
 	}
 
-	private void handleAnims(ArrayList<AnimationDrawable> anims)
+	private void handleAnims(@NonNull ArrayList<AnimationDrawable> anims)
 	{
 		for (AnimationDrawable anim : anims)
 		{
@@ -215,6 +235,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 		mAnimHandler.addAnims(anims);
 	}
+
 	private void createWizards(@NonNull GameAttributes gameAttrs)
 	{
 		mWizard1 = new Wizard();
@@ -239,4 +260,54 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(mWizard1);
 		mGame.addObject(mWizard2);
 	}
+
+	public void castFireball(Vector2D position, int id)
+	{
+		if (mUnreleasedFireballs.containsKey(id))
+		{
+			Log.e("DEBUG", "Attempted to cast fireball, but id is already associated with one.");
+			return;
+		}
+
+		// TODO figure out who cast it based on pos
+		Wizard caster;
+		caster = mWizard1;
+
+		Fireball fireball = Fireball.obtain();
+		fireball.init(caster, position);
+		fireball.setAnchor(0.5f, 0.5f);
+		fireball.setHeight(mFireballHeight, true);
+
+		mUnreleasedFireballs.put(id, fireball);
+		mGame.addObject(fireball);
+	}
+
+	public void cancelFireball(int id)
+	{
+		Fireball fireball = mUnreleasedFireballs.remove(id);
+		if (fireball != null)
+		{
+			fireball.recycle();
+		}
+	}
+
+	public void releaseFireball(Wizard caster, Vector2D direction, int id)
+	{
+		//Fireball fireball = new Fireball(caster, direction, mGameAttributes.fireballSpeed);
+		// TODO set it up right
+		//mGame.addObject(fireball);
+	}
+
+	/* TODO
+	private void castShield(Wizard caster)
+	{
+		/* TODO
+		* changing width
+		* changing rot and pos
+	 	* persists until touch stops
+	 	*//*
+
+		mGame.addObject(shield);
+	}
+	 */
 }

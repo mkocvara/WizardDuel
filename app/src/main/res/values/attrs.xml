@@ -25,5 +25,7 @@
         <!-- Right bound of the right Wizard. Superseded by wizardsRelativeDistFromEdge. -->
         <attr name="wizard2RelativeRight" format="float" />
         <!-- Left is calculated, preserving aspect ratio -->
+
+        <attr name="fireballRelativeHeight" format="float" />
     </declare-styleable>
 </resources>
