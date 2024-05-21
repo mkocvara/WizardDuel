@@ -52,11 +52,6 @@
             android:onClick="onClick"
             android:text="@string/main_btn_options" />
 
-        <Button
-            android:id="@+id/main_btn_quit"
-            style="@style/UI.Button"
-            android:onClick="onClick"
-            android:text="@string/main_btn_quit" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

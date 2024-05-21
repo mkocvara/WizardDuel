@@ -16,7 +16,7 @@ import com.mk.wizardduel.utils.AnimHandler;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener
 {
-	private Button mPlayBtn, mOptionsBtn, mQuitBtn;
+	private Button mPlayBtn, mOptionsBtn;
 	private AnimHandler mAnimHandler;
 
 	@Override
@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 		mPlayBtn = findViewById(R.id.main_btn_play);
 		mOptionsBtn = findViewById(R.id.main_btn_options);
-		mQuitBtn = findViewById(R.id.main_btn_quit);
 
 		mAnimHandler = new AnimHandler(getLifecycle(), true);
 		getLifecycle().addObserver(mAnimHandler);
@@ -46,10 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		else if (view == mOptionsBtn)
 		{
 			intent = new Intent(this, OptionsActivity.class);
-		}
-		else if (view == mQuitBtn)
-		{
-			finishAndRemoveTask();
 		}
 		else
 		{
