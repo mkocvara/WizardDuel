@@ -2,8 +2,6 @@ package com.mk.wizardduel.gameobjects;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Path;
-import android.graphics.Point;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
@@ -11,6 +9,9 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+
+import com.mk.wizardduel.utils.Vector2D;
 
 public abstract class GameObject
 {
@@ -20,22 +21,52 @@ public abstract class GameObject
 		INACTIVE,
 		REMOVED
 	}
-
-	public Point pos = new Point();
-	public PointF anchor = new PointF(0.f,0.f);
-	public PointF scale = new PointF(1.f, 1.f);
 	/**
 	 * Rotation in degrees.
 	 */
 	public float rotation = 0.f;
 	public boolean collideable = false;
 
-	protected Drawable mDrawable;
+	private final Vector2D mPos = new Vector2D(0.f,0.f);
+	private final Vector2D mAnchor = new Vector2D(0.f,0.f);
+	private final Vector2D mScale = new Vector2D(1.f, 1.f);
 
+	private Drawable mDrawable;
+	private @ColorInt int mTint = 0xFFFFFFFF;
+
+	private Matrix mCachedTransform = null;
 	private RectF mCachedWorldBounds = null;
-	private Region mChachedCollisionRegion = null;
+	private Region mCachedCollisionRegion = null;
 	private int mHeight = -1, mWidth = -1;
 	private State mOjectState = State.INACTIVE;
+
+	public State getObjectState() { return mOjectState; }
+
+	public Vector2D getPos() { return mPos; }
+	public Vector2D getAnchor() { return mAnchor; }
+	public Vector2D getScale() { return mScale; }
+
+	public int getHeight() {
+		if (mHeight != -1)
+			return mHeight;
+
+		if (mDrawable != null)
+			return mHeight = mDrawable.getIntrinsicHeight();
+
+		setActive(false);
+		return 0;
+	}
+
+	public int getWidth() {
+		if (mWidth != -1)
+			return mWidth;
+
+		if (mDrawable != null)
+			return mWidth = mDrawable.getIntrinsicWidth();
+
+		setActive(false);
+		return 0;
+	}
 
 	/**
 	 * Calculates this object's bounds as a Rect within the world (GameView).
@@ -47,10 +78,10 @@ public abstract class GameObject
 			return mCachedWorldBounds;
 
 		RectF viewBounds = new RectF();
-		viewBounds.right = mWidth;
-		viewBounds.bottom = mHeight;
+		viewBounds.right = getWidth();
+		viewBounds.bottom = getHeight();
 
-		Matrix transform = getTransform(mWidth, mHeight);
+		Matrix transform = getTransform();
 		transform.mapRect(viewBounds);
 
 		mCachedWorldBounds = viewBounds;
@@ -64,16 +95,19 @@ public abstract class GameObject
 	 */
 	public Region getCollisionRegion()
 	{
-		if (mChachedCollisionRegion != null)
-			return mChachedCollisionRegion;
+		if (mCachedCollisionRegion != null)
+			return mCachedCollisionRegion;
+
+		int h = getHeight();
+		int w = getWidth();
 
 		float[] corners = {
-				0.f, 		0.0f,		// left,		top
-				mWidth, 	0.0f,		// right,	top
-				mWidth, 	mHeight,	// right, 	bottom
-				0.f, 		mHeight 	// left, 	bottom
+				0.f, 	0.0f,	// left,		top
+				w, 	0.0f,	// right,	top
+				w, 	h,		// right, 	bottom
+				0.f, 	h 		// left, 	bottom
 		};
-		Matrix transform = getTransform(mWidth, mHeight);
+		Matrix transform = getTransform();
 		transform.mapPoints(corners);
 
 		Path path = new Path();
@@ -97,25 +131,33 @@ public abstract class GameObject
 		Region colRegion = new Region();
 		colRegion.setPath(path, clipRegion);
 
-		mChachedCollisionRegion = colRegion;
+		mCachedCollisionRegion = colRegion;
 		return colRegion;
 	}
 
-	public void setTint(@ColorInt int colour)
-	{
-		if (mDrawable == null)
-			return;
+	public @ColorInt int getTint() { return mTint; }
 
-		mDrawable.setTint(colour);
+
+	public void setPos(Vector2D pos) { mPos.set(pos); }
+	public void setPos(float x, float y) { mPos.set(x, y); }
+	public void setAnchor(Vector2D anchor) { mAnchor.set(anchor); }
+	public void setAnchor(float x, float y) { mAnchor.set(x, y); }
+	public void setScale(Vector2D scale) { mScale.set(scale); }
+	public void setScale(float x, float y) { mScale.set(x, y); }
+
+	public void setDrawable(Drawable drawable)
+	{
+		mDrawable = drawable;
+		mDrawable.setTint(mTint);
 	}
 
 	public void setHeight(int newHeight) { setHeight(newHeight, false); }
 	public void setHeight(int newHeight, boolean maintainAspectRatio)
 	{
-		if (maintainAspectRatio && mWidth != -1 && mHeight != -1)
+		if (maintainAspectRatio)
 		{
-			int prevHeight = mHeight;
-			int prevWidth = mWidth;
+			int prevHeight = getHeight();
+			int prevWidth = getWidth();
 			float scale = (float)newHeight / (float)prevHeight;
 			mWidth = (int)(prevWidth * scale);
 		}
@@ -126,10 +168,10 @@ public abstract class GameObject
 	public void setWidth(int newWidth) { setWidth(newWidth, false); }
 	public void setWidth(int newWidth, boolean maintainAspectRatio)
 	{
-		if (maintainAspectRatio && mWidth != -1 && mHeight != -1)
+		if (maintainAspectRatio)
 		{
-			int prevHeight = mHeight;
-			int prevWidth = mWidth;
+			int prevHeight = getHeight();
+			int prevWidth = getWidth();
 			float scale = (float)newWidth / (float)prevWidth;
 			mHeight = (int)(prevHeight * scale);
 		}
@@ -137,13 +179,23 @@ public abstract class GameObject
 		mWidth = newWidth;
 	}
 
-	public State getObjectState() { return mOjectState; }
-	public void setActive(boolean active) {
+	public void setTint(@ColorInt int tint)
+	{
+		mTint = tint;
+
+		if (mDrawable == null)
+			return;
+
+		mDrawable.setTint(tint);
+	}
+
+	protected void setActive(boolean active) {
 		if (mOjectState == State.REMOVED)
 			return;
 
 		mOjectState = active ? State.ACTIVE : State.INACTIVE;
 	}
+
 	public void destroy() { mOjectState = State.REMOVED; }
 
 	/**
@@ -164,67 +216,50 @@ public abstract class GameObject
 	public void update(double deltaTime)
 	{
 		mCachedWorldBounds = null;
-		mChachedCollisionRegion = null;
+		mCachedCollisionRegion = null;
+		mCachedTransform = null;
 	}
 
 	/**
 	 * Draws the object's drawable on the <code>canvas</code> using the object's tint.
 	 * @param canvas Canvas object to draw on.
 	 */
-	public void draw(Canvas canvas)
+	public void draw(@NonNull Canvas canvas)
 	{
-		Matrix transform = getTransform(mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
-		Rect bounds = new Rect(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
+		Matrix transform = getTransform();
+
+		Rect bounds = new Rect(0, 0, getWidth(), getHeight());
 		RectF mappedBounds = new RectF(bounds);
 		transform.mapRect(mappedBounds);
 		Rect drawBounds = new Rect();
 		mappedBounds.round(drawBounds);
 
-		Drawable drawable = mDrawable.getCurrent();
-		drawable.setBounds(drawBounds);
-
 		mDrawable.setBounds(drawBounds);
 
 		canvas.save();
 		canvas.rotate(rotation, drawBounds.exactCenterX(), drawBounds.exactCenterY());
-		drawable.draw(canvas);
 		mDrawable.draw(canvas);
 		canvas.restore();
 	}
 
 	public abstract void handleCollision(GameObject other);
 
-	protected Matrix getTransform(float width, float height)
+	protected Matrix getTransform()
 	{
+		if (mCachedTransform != null)
+			return mCachedTransform;
+
 		Matrix transform = new Matrix();
 
-		// Adjust scale using desired height & width
-		float scaleX = 0, scaleY = 0;
-		if (mWidth != -1)
-			scaleX = (float)mWidth / width;
-
-		if (mHeight != -1)
-			scaleY = (float)mHeight / height;
-
-		// > Default to maintaining aspect ratio if only one is set
-		if (mWidth == -1 && mHeight != -1)
-			scaleX = scaleY;
-		else if (mWidth != -1 && mHeight == -1)
-			scaleY = scaleX;
-
-		scaleX *= scale.x;
-		scaleY *= scale.y;
-
 		// Determine anchor offsets
-		float anchorOffsetX = -(anchor.x * width  * scaleX);
-		float anchorOffsetY = -(anchor.y * height * scaleY);
+		float anchorOffsetX = -(mAnchor.x * getWidth());
+		float anchorOffsetY = -(mAnchor.y * getHeight());
 
 		// Perform transformations
-		transform.setScale(scaleX, scaleY);
-		transform.postTranslate(anchorOffsetX, anchorOffsetY);
-		transform.postRotate(rotation);
-		transform.postTranslate(pos.x, pos.y);
+		transform.setTranslate(anchorOffsetX, anchorOffsetY);
+		transform.postScale(mScale.x, mScale.y);
+		transform.postTranslate(mPos.x, mPos.y);
 
-		return transform;
+		return mCachedTransform = transform;
 	}
 }

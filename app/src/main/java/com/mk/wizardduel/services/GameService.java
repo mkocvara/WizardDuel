@@ -189,32 +189,6 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		return false;
 	}
 
-
-	private void createWizards(GameAttributes gameAttrs)
-	{
-		Wizard wizard1 = new Wizard();
-		Wizard wizard2 = new Wizard();
-
-		// Set Wizard sizes and positions
-		int scaledHeight1 = (int)(mViewBounds.height() * (gameAttrs.wizard1RelativeBounds.bottom - gameAttrs.wizard1RelativeBounds.top));
-		wizard1.setHeight(scaledHeight1, true);
-
-		int scaledHeight2 = (int)(mViewBounds.height() * (gameAttrs.wizard2RelativeBounds.bottom - gameAttrs.wizard2RelativeBounds.top));
-		wizard2.setHeight(scaledHeight2, true);
-
-		wizard1.pos.set((int)(mViewBounds.width() * gameAttrs.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * gameAttrs.wizard1RelativeBounds.top));
-		wizard2.pos.set((int)(mViewBounds.width() * gameAttrs.wizard2RelativeBounds.right), (int)(mViewBounds.height() * gameAttrs.wizard2RelativeBounds.top));
-
-		wizard2.anchor.set(0.f, 1.f);
-		wizard2.rotation = 180.f;
-
-		wizard1.setTint(Color.BLUE);
-		wizard2.setTint(Color.RED);
-
-		mGame.addObject(wizard1);
-		mGame.addObject(wizard2);
-	}
-
 	private void updateAnimHandler()
 	{
 		ArrayList<AnimationDrawable> currAllAnims = mGame.getAllAnims();
@@ -240,5 +214,29 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		}
 
 		mAnimHandler.addAnims(anims);
+	}
+	private void createWizards(@NonNull GameAttributes gameAttrs)
+	{
+		mWizard1 = new Wizard();
+		mWizard2 = new Wizard();
+
+		// Set Wizard sizes and positions
+		int scaledHeight1 = (int)(mViewBounds.height() * (gameAttrs.wizard1RelativeBounds.bottom - gameAttrs.wizard1RelativeBounds.top));
+		mWizard1.setHeight(scaledHeight1, true);
+
+		int scaledHeight2 = (int)(mViewBounds.height() * (gameAttrs.wizard2RelativeBounds.bottom - gameAttrs.wizard2RelativeBounds.top));
+		mWizard2.setHeight(scaledHeight2, true);
+
+		mWizard1.setPos((int)(mViewBounds.width() * gameAttrs.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * gameAttrs.wizard1RelativeBounds.top));
+		mWizard2.setPos((int)(mViewBounds.width() * gameAttrs.wizard2RelativeBounds.right), (int)(mViewBounds.height() * gameAttrs.wizard2RelativeBounds.top));
+
+		mWizard2.setAnchor(1.f, 0.f);
+		mWizard2.rotation = 180.f;
+
+		mWizard1.setTint(Color.BLUE);
+		mWizard2.setTint(Color.RED);
+
+		mGame.addObject(mWizard1);
+		mGame.addObject(mWizard2);
 	}
 }

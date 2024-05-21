@@ -14,7 +14,7 @@ import kotlin.random.Random;
 
 public class Wizard extends GameObject
 {
-	final private @DrawableRes int[] drawablePool = {
+	private static final @DrawableRes int[] drawablePool = {
 			R.drawable.wizard1_anim,
 			R.drawable.wizard2_anim,
 			R.drawable.wizard3_anim,
@@ -49,7 +49,7 @@ public class Wizard extends GameObject
 
 	private void init(Drawable drawable)
 	{
-		mDrawable = drawable;
+		setDrawable(drawable);
 
 		int h = drawable.getIntrinsicHeight();
 		int w = drawable.getIntrinsicWidth();
