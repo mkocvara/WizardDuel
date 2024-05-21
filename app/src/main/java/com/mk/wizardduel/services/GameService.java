@@ -9,6 +9,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Choreographer;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +30,6 @@ import java.util.HashMap;
 
 public class GameService extends LifecycleService implements Choreographer.FrameCallback
 {
-
 	public class GameBinder extends Binder
 	{
 		public GameService getService() { return GameService.this; }
@@ -137,7 +137,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// Unpack necessary attributes
 		mGameAttributes = gameAttrs;
 		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
-		mFireballHeight = (int) ((fireballRelativeHeight != -1) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizard1.getHeight() * 0.3f));
+		mFireballHeight = (int) ((fireballRelativeHeight != GameAttributes.NOT_SET) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizard1.getHeight() * 0.3f));
 
 		// Start game thread and choreographer time sync
 		Choreographer.getInstance().postFrameCallback(this);
@@ -149,7 +149,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		cachedAllAnims = mGame.getAllAnims();
 		handleAnims(cachedAllAnims);
 
-		mGameInputManager = new GameInputManager(this);
+		mGameInputManager = new GameInputManager(this, ViewConfiguration.get(this));
 
 		mInitialised = true;
 	}
@@ -282,6 +282,13 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(fireball);
 	}
 
+	public void moveFireball(int id, float x, float y)
+	{
+		Fireball fireball = mUnreleasedFireballs.get(id);
+		if (fireball != null)
+			fireball.setPos(x, y);
+	}
+
 	public void cancelFireball(int id)
 	{
 		Fireball fireball = mUnreleasedFireballs.remove(id);
@@ -291,11 +298,26 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		}
 	}
 
-	public void releaseFireball(Wizard caster, Vector2D direction, int id)
+	public void cancelAllFireballs()
 	{
-		//Fireball fireball = new Fireball(caster, direction, mGameAttributes.fireballSpeed);
-		// TODO set it up right
-		//mGame.addObject(fireball);
+		for (Fireball fireball : mUnreleasedFireballs.values())
+			fireball.recycle();
+
+		mUnreleasedFireballs.clear();
+	}
+
+	public void releaseFireball(int id, Vector2D direction)
+	{
+		Fireball fireball = mUnreleasedFireballs.get(id);
+		if (fireball == null)
+			return;
+
+		int speed = mGameAttributes.fireballSpeedPx != GameAttributes.NOT_SET
+				? mGameAttributes.fireballSpeedPx
+				: mGameAttributes.fireballSpeedDp; // only a backup, Px should always be set.
+
+		fireball.release(direction, speed);
+		mUnreleasedFireballs.remove(id);
 	}
 
 	/* TODO

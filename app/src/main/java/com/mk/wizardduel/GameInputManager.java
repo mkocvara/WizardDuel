@@ -7,23 +7,19 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 
 import com.mk.wizardduel.services.GameService;
-import com.mk.wizardduel.utils.MultiTouchController;
-import com.mk.wizardduel.utils.MultiTouchController.PointInfo;
 import com.mk.wizardduel.utils.Vector2D;
-
-import kotlin.NotImplementedError;
 
 /** A class which handles all of the game's inputs. Much of this class' implementation
  * has been taken from GestureDetector and adapted to work with multi-touch. */
 public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 										implements GestureDetector.OnDoubleTapListener,
-													  ScaleGestureDetector.OnScaleGestureListener,
-													  MultiTouchController.MultiTouchObjectCanvas<Object>
+													  ScaleGestureDetector.OnScaleGestureListener
 {
 	// Message type constants akin to those used by GestureDetector,
 	// except using it for Message.arg1 in GameGestureHandler below
@@ -76,21 +72,17 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		}
 	}
 
-	// Gesture constants
-	private static final int TAP_TIMEOUT = ViewConfiguration.getTapTimeout();
-
 	// Members
 	final private String TOUCH_DEBUG_TAG = "DEBUG:Touch"; // Logging tag
 	private final GameService mGameService;
-	private final MultiTouchController<Object> mMultiTouchController;
-	private final PointInfo mPointers;
+	private final ViewConfiguration mViewConfig;
 	private final Handler mHandler;
+	private VelocityTracker mVelocityTracker;
 
-	public GameInputManager(GameService gameService)
+	public GameInputManager(GameService gameService, ViewConfiguration viewConfiguration)
 	{
 		mGameService = gameService;
-		mMultiTouchController = new MultiTouchController<>(this);
-		mPointers = new PointInfo();
+		mViewConfig = viewConfiguration;
 		mHandler = new GameGestureHandler();
 			// TODO would be improved by running it in another thread, but alas, I lack the time to implement that
 	}
@@ -98,7 +90,10 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 	/** Called manually by GameView. Top-level touch event. */
 	public boolean onTouch(@NonNull MotionEvent event)
 	{
-		mMultiTouchController.onTouchEvent(event);
+		if (mVelocityTracker == null) {
+			mVelocityTracker = VelocityTracker.obtain();
+		}
+		mVelocityTracker.addMovement(event);
 
 		int eventType = event.getActionMasked();
 
@@ -140,19 +135,22 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		message.obj = event;
 		message.arg1 = SHOW_PRESS;
 
-		mHandler.sendMessageAtTime(message, event.getDownTime() + TAP_TIMEOUT);
+		mHandler.sendMessageAtTime(message, event.getDownTime() + ViewConfiguration.getTapTimeout());
 	}
 
 	public void onPointerUp(@NonNull MotionEvent event, int pointerId)
 	{
 		Log.i(TOUCH_DEBUG_TAG, "Pointer up, id == " + pointerId);
 
-		// TODO detect fling
-		boolean fling = false;
+		final int minFlingVelocity = mViewConfig.getScaledMinimumFlingVelocity() * 15; // times that because by default it is very low
+		final int maxFlingVelocity = mViewConfig.getScaledMaximumFlingVelocity();
 
-		if (fling)
+		mVelocityTracker.computeCurrentVelocity(1000, maxFlingVelocity);
+		final Vector2D velocity = new Vector2D(mVelocityTracker.getXVelocity(pointerId), mVelocityTracker.getYVelocity(pointerId));
+
+		if ((Math.abs(velocity.getLength()) > minFlingVelocity))
 		{
-			//onPointerFling();
+			onPointerFling(event, pointerId, velocity);
 		}
 		else
 		{
@@ -163,15 +161,18 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 
 	public void onMove(@NonNull MotionEvent event)
 	{
-		// TODO use PointerInfo to update all live fireballs
+		int numPointers = event.getPointerCount();
 
-
+		for (int i = 0; i < numPointers; i++)
+		{
+			// Log.i(TOUCH_DEBUG_TAG, "onMove(), id:" + event.getPointerId(i) + " x:" + event.getX(i) + " y:" + event.getY(i));
+			mGameService.moveFireball(event.getPointerId(i), event.getX(i), event.getY(i));
+		}
 	}
 
 	private void onCancel(MotionEvent event)
 	{
-		// TODO
-		throw new NotImplementedError();
+		mGameService.cancelAllFireballs();
 	}
 
 
@@ -181,15 +182,20 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		Log.i(TOUCH_DEBUG_TAG, "onPointerShowPress() triggered for pointer with id == " + pointerId);
 
 		int pointerIndex = event.findPointerIndex(pointerId);
+		if (pointerIndex == -1)
+			return;
+
 		Vector2D pos = new Vector2D(event.getX(pointerIndex), event.getY(pointerIndex));
 		mGameService.castFireball(pos, pointerId);
 	}
 
-	public void onPointerFling(MotionEvent e1, @NonNull MotionEvent e2,
-											 float velocityX, float velocityY, int pointerId)
+	// Note: standard oFling() also gets the initial down event, but it doesn't seem necessary here.
+	public void onPointerFling(@NonNull MotionEvent endEvent, int pointerId, Vector2D velocity)
 	{
-		// TODO release fireballs
-		throw new NotImplementedError();
+		Log.i(TOUCH_DEBUG_TAG, "Fling detected for pointer with id == " + pointerId);
+
+		mGameService.releaseFireball(pointerId, velocity.getNormalized());
+		mHandler.removeMessages(pointerId);
 	}
 
 
@@ -223,24 +229,5 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 	{
 		// TODO Destroy shield IF exists
 		Log.i(TOUCH_DEBUG_TAG, "onScaleEnd() triggered");
-	}
-
-
-	// === MultiTouchController events ===
-	@Override public Object getDraggableObjectAtPoint(MultiTouchController.PointInfo touchPoint) { return this; }
-	@Override public void getPositionAndScale(Object obj, MultiTouchController.PositionAndScale objPosAndScaleOut) { }
-	@Override
-	public boolean setPositionAndScale(Object obj, MultiTouchController.PositionAndScale newObjPosAndScale, MultiTouchController.PointInfo touchPoint)
-	{
-		// only need to grab new pointer info
-		mPointers.set(touchPoint);
-		return true;
-	}
-
-	@Override
-	public void selectObject(Object obj, MultiTouchController.PointInfo touchPoint)
-	{
-		// only need to grab new pointer info
-		mPointers.set(touchPoint);
 	}
 }

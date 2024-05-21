@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.ScaleGestureDetector;
 import android.view.MotionEvent;
@@ -46,7 +47,7 @@ public class GameView extends View
 		final TypedArray attributes = context.obtainStyledAttributes(
 				attrs, R.styleable.GameView, defStyleAttr, defStyleRes);
 
-		final float NOT_SET = -1.f;
+		final float NOT_SET = GameAttributes.NOT_SET;
 		float wBothTop, wBothBottom, wBothEdge, w1Top, w1Bottom, w1Left, w2Top, w2Bottom, w2Right;
 		w1Top = w1Bottom = w1Left = w2Top = w2Bottom = w2Right = NOT_SET;
 
@@ -63,7 +64,11 @@ public class GameView extends View
 			w1Left =  (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, NOT_SET)  : wBothEdge;
 			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
 
-			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, -1);
+			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, NOT_SET);
+			mGameAttributes.fireballSpeedPx = (int)TypedValue.applyDimension(
+					TypedValue.COMPLEX_UNIT_DIP,
+					mGameAttributes.fireballSpeedDp,
+					getResources().getDisplayMetrics());
 		}
 		finally
 		{
@@ -83,7 +88,7 @@ public class GameView extends View
 	}
 
 	/** Must be called by parent activity, passing a reference to a running GameService */
-	public void init(GameService gameService)
+	public void init(@NonNull GameService gameService)
 	{
 		mGameAttributes.gameView = this;
 		mGameService = gameService;

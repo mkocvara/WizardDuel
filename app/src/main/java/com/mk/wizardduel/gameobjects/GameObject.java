@@ -179,6 +179,12 @@ public abstract class GameObject
 		mWidth = newWidth;
 	}
 
+	public void resetDimensions()
+	{
+		mHeight = mDrawable.getIntrinsicHeight();
+		mWidth = mDrawable.getIntrinsicWidth();
+	}
+
 	public void setTint(@ColorInt int tint)
 	{
 		mTint = tint;

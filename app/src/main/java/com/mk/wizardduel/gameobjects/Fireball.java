@@ -1,7 +1,7 @@
 package com.mk.wizardduel.gameobjects;
 
 import android.graphics.drawable.Drawable;
-import android.os.Message;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pools;
@@ -27,7 +27,6 @@ public class Fireball extends GameObject
 	private boolean mSentFlying = false;
 	private Drawable mCastingDrawable, mFlyingDrawable;
 
-
 	public Fireball()
 	{
 		mCastingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_anim);
@@ -36,8 +35,11 @@ public class Fireball extends GameObject
 		setActive(false);
 	}
 
+	public Wizard getCaster() { return mCasterWizard; }
+
 	public void recycle()
 	{
+		resetDimensions();
 		setActive(false);
 		pool.release(this);
 	}
@@ -55,12 +57,41 @@ public class Fireball extends GameObject
 		setActive(true);
 	}
 
+	public void release(Vector2D direction, int speed)
+	{
+		mDirection = direction;
+		mBaseSpeed = speed;
+
+		int preH = getHeight();
+		int preW = getWidth();
+
+
+		setDrawable(mFlyingDrawable);
+
+		// Maintain height but correct for different aspect ratio.
+		// This works, because the flying drawable is elongated in the dimension.
+		float widthScale = (float) getWidth() / (float) mCastingDrawable.getIntrinsicHeight();
+		int newWidth = (int) ((float)mFlyingDrawable.getIntrinsicWidth() * widthScale);
+		setWidth(newWidth, false);
+
+		// Set rotation: 0 rotation is the direction [-1,0] (tail on the right)
+		Vector2D noRotDir = new Vector2D(-1f, 0f);
+		double angle = direction.getAngle() + noRotDir.getAngle();
+		rotation = (int)Math.toDegrees(angle);
+
+		mSentFlying = true;
+	}
+
 	@Override
 	public void update(double deltaTime)
 	{
 		super.update(deltaTime);
 
-		//pos.add(mDirection.getMultiplied(mBaseSpeed));
+		if (mSentFlying)
+		{
+			// Add direction vector timed by speed to the position to move
+			setPos(getPos().getAdded(mDirection.getMultiplied(mBaseSpeed)));
+		}
 	}
 
 	@Override
