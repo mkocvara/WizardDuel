@@ -72,7 +72,8 @@ public class Game extends ViewModel
 	{
 		for (GameObject go : mGameObjects)
 		{
-			go.draw(canvas);
+			if (go.getObjectState() == GameObject.State.ACTIVE)
+				go.draw(canvas);
 		}
 	}
 
