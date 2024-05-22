@@ -136,7 +136,7 @@ public abstract class GameObject
 	}
 
 	public @ColorInt int getTint() { return mTint; }
-
+	public boolean isActive() { return mOjectState == State.ACTIVE; }
 
 	public void setPos(Vector2D pos) { mPos.set(pos); }
 	public void setPos(float x, float y) { mPos.set(x, y); }

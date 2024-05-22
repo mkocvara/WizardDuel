@@ -1,5 +1,9 @@
 <resources>
     <declare-styleable name="GameView">
+        <!-- Fraction from 0.1 to 0.5 determining the fraction of the view's width that
+            casting areas will take up. It is 0.3 by default-->
+        <attr name="castingAreaSize" format="float" />
+        
         <!-- Fraction of the screen determining top bound of both wizards.
             Takes precedence over individual bounds attributes. -->
         <attr name="wizardsRelativeTop" format="float" />

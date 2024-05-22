@@ -55,7 +55,7 @@ public class Game extends ViewModel
 		while (it.hasNext())
 		{
 			GameObject go = it.next();
-			if (go.getObjectState() == GameObject.State.ACTIVE)
+			if (go.isActive())
 				go.update(deltaTime);
 
 			if (go.getObjectState() == GameObject.State.REMOVED)
@@ -69,7 +69,7 @@ public class Game extends ViewModel
 	{
 		for (GameObject go : mGameObjects)
 		{
-			if (go.getObjectState() == GameObject.State.ACTIVE)
+			if (go.isActive())
 				go.draw(canvas);
 		}
 	}
@@ -81,13 +81,13 @@ public class Game extends ViewModel
 		for (int i = 0; i < numObjects-1; i++)
 		{
 			go1 = mGameObjects.get(i);
-			if (go1.getObjectState() != GameObject.State.ACTIVE || !go1.collideable)
+			if (!go1.isActive() || !go1.collideable)
 				continue;
 
 			for (int j = 1; j < numObjects; j++)
 			{
 				go2 = mGameObjects.get(j);
-				if (go2.getObjectState() != GameObject.State.ACTIVE || !go2.collideable)
+				if (!go2.isActive() || !go2.collideable)
 					continue;
 
 				Region collisionRegion1 = go1.getCollisionRegion();

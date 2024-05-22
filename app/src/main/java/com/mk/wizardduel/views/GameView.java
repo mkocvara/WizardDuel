@@ -3,9 +3,11 @@ package com.mk.wizardduel.views;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.ScaleGestureDetector;
@@ -14,6 +16,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.mk.wizardduel.GameAttributes;
 import com.mk.wizardduel.R;
@@ -28,6 +31,8 @@ public class GameView extends View
 
 	private GestureDetector mGestureDetector;
 	private ScaleGestureDetector mScaleGestureDetector;
+
+	private Drawable mCastingAreaDrawable1, mCastingAreaDrawable2;
 
 	public GameView(Context context, @Nullable AttributeSet attrs)
 	{
@@ -69,6 +74,8 @@ public class GameView extends View
 					TypedValue.COMPLEX_UNIT_DIP,
 					mGameAttributes.fireballSpeedDp,
 					getResources().getDisplayMetrics());
+
+			mGameAttributes.castingAreaRelativeWidth = attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.castingAreaRelativeWidth);
 		}
 		finally
 		{
@@ -115,6 +122,7 @@ public class GameView extends View
 
 		// Set the view's bounds
 		mGameAttributes.viewBounds.set(0, 0, ww, hh);
+		prepareCastingAreas();
 	}
 
 	@Override
@@ -125,20 +133,9 @@ public class GameView extends View
 		if (!initialised)
 			return;
 
+		drawCastingAreas(canvas);
+
 		mGameService.draw(canvas);
-	}
-
-	@Override
-	public void invalidateDrawable(@NonNull Drawable drawable)
-	{
-		// Do nothing! Invalidation is handled by the game loop.
-	}
-
-	@Override
-	protected boolean verifyDrawable(@NonNull Drawable who)
-	{
-		super.verifyDrawable(who);
-		return true;
 	}
 
 	@Override
@@ -149,5 +146,69 @@ public class GameView extends View
 		result = mGameService.getGameInputHandler().onTouch(motionEvent) || result;
 
 		return result;
+	}
+
+	private void prepareCastingAreas()
+	{
+		int castingAreaDrawableId = R.drawable.casting_border;
+		mCastingAreaDrawable1 = AppCompatResources.getDrawable(getContext(), castingAreaDrawableId);
+		mCastingAreaDrawable2 = AppCompatResources.getDrawable(getContext(), castingAreaDrawableId);
+
+		if (mCastingAreaDrawable1 == null || mCastingAreaDrawable2 == null)
+		{
+			Log.e("GameView", "Couldn't fetch casting area drawable.");
+			return;
+		}
+
+		float drawableHeight = mCastingAreaDrawable1.getIntrinsicHeight();
+		float drawableWidth = mCastingAreaDrawable1.getIntrinsicWidth();
+
+		int bottomBound = mGameAttributes.viewBounds.height();
+		int topBound = 0;
+
+		int rightBound1 = (int)((float)mGameAttributes.viewBounds.width() * mGameAttributes.castingAreaRelativeWidth);
+		float scaleUp = bottomBound / drawableHeight;
+		int newWidth = (int)(drawableWidth * scaleUp);
+		int leftBound1 = rightBound1 - newWidth;
+		mCastingAreaDrawable1.setBounds(leftBound1, topBound, rightBound1, bottomBound);
+
+		int leftBound2 = mGameAttributes.viewBounds.width() - rightBound1;
+		int rightBound2 = leftBound2 + newWidth;
+		mCastingAreaDrawable2.setBounds(leftBound2, topBound, rightBound2, bottomBound);
+
+		mCastingAreaDrawable1.setTint(mGameAttributes.player1Colour);
+		mCastingAreaDrawable2.setTint(mGameAttributes.player2Colour);
+
+		mGameAttributes.castingAreaWidth = rightBound1;
+
+		int alpha = 200;
+		mCastingAreaDrawable1.setAlpha(alpha);
+		mCastingAreaDrawable2.setAlpha(alpha);
+	}
+
+	private void drawCastingAreas(Canvas canvas)
+	{
+		mCastingAreaDrawable1.draw(canvas);
+		Rect castingArea2Bounds = mCastingAreaDrawable2.getBounds();
+
+		canvas.save();
+		canvas.rotate(180, castingArea2Bounds.exactCenterX(), castingArea2Bounds.exactCenterY());
+		mCastingAreaDrawable2.draw(canvas);
+		canvas.restore();
+	}
+
+	@Override
+	public void invalidateDrawable(@NonNull Drawable drawable)
+	{
+		// Do nothing! Invalidation is handled by the game loop.
+		// Override necessary for AnimationDrawables to work.
+	}
+
+	@Override
+	protected boolean verifyDrawable(@NonNull Drawable who)
+	{
+		// Also necessary for AnimationDrawables to work.
+		super.verifyDrawable(who);
+		return true;
 	}
 }

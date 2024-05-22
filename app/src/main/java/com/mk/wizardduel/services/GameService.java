@@ -126,16 +126,17 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			return;
 		}
 
+		mGameAttributes = gameAttrs;
+
 		// Set View Bounds -- must happen at the top
-		mViewBounds.set(gameAttrs.viewBounds);
+		mViewBounds.set(mGameAttributes.viewBounds);
 
 		// Only create wizards the first time this service is started to avoid duplicating them
 		// every time activity is recreated.
 		if (!mGame.hasStarted())
-			createWizards(gameAttrs);
+			createWizards();
 
 		// Unpack necessary attributes
-		mGameAttributes = gameAttrs;
 		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
 		mFireballHeight = (int) ((fireballRelativeHeight != GameAttributes.NOT_SET) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizard1.getHeight() * 0.3f));
 
@@ -242,26 +243,26 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mAnimHandler.addAnims(anims);
 	}
 
-	private void createWizards(@NonNull GameAttributes gameAttrs)
+	private void createWizards()
 	{
 		mWizard1 = new Wizard();
 		mWizard2 = new Wizard();
 
 		// Set Wizard sizes and positions
-		int scaledHeight1 = (int)(mViewBounds.height() * (gameAttrs.wizard1RelativeBounds.bottom - gameAttrs.wizard1RelativeBounds.top));
+		int scaledHeight1 = (int)(mViewBounds.height() * (mGameAttributes.wizard1RelativeBounds.bottom - mGameAttributes.wizard1RelativeBounds.top));
 		mWizard1.setHeight(scaledHeight1, true);
 
-		int scaledHeight2 = (int)(mViewBounds.height() * (gameAttrs.wizard2RelativeBounds.bottom - gameAttrs.wizard2RelativeBounds.top));
+		int scaledHeight2 = (int)(mViewBounds.height() * (mGameAttributes.wizard2RelativeBounds.bottom - mGameAttributes.wizard2RelativeBounds.top));
 		mWizard2.setHeight(scaledHeight2, true);
 
-		mWizard1.setPos((int)(mViewBounds.width() * gameAttrs.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * gameAttrs.wizard1RelativeBounds.top));
-		mWizard2.setPos((int)(mViewBounds.width() * gameAttrs.wizard2RelativeBounds.right), (int)(mViewBounds.height() * gameAttrs.wizard2RelativeBounds.top));
+		mWizard1.setPos((int)(mViewBounds.width() * mGameAttributes.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * mGameAttributes.wizard1RelativeBounds.top));
+		mWizard2.setPos((int)(mViewBounds.width() * mGameAttributes.wizard2RelativeBounds.right), (int)(mViewBounds.height() * mGameAttributes.wizard2RelativeBounds.top));
 
 		mWizard2.setAnchor(1.f, 0.f);
 		mWizard2.rotation = 180.f;
 
-		mWizard1.setTint(Color.BLUE);
-		mWizard2.setTint(Color.RED);
+		mWizard1.setTint(mGameAttributes.player1Colour);
+		mWizard2.setTint(mGameAttributes.player2Colour);
 
 		mGame.addObject(mWizard1);
 		mGame.addObject(mWizard2);
@@ -275,9 +276,9 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			return;
 		}
 
-		// TODO figure out who cast it based on pos
-		Wizard caster;
-		caster = mWizard1;
+		Wizard caster = getCastingAreaOwner((int)position.x);
+		if (caster == null)
+			return;
 
 		Fireball fireball = Fireball.obtain();
 		fireball.init(caster, position);
@@ -291,8 +292,15 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	public void moveFireball(int id, float x, float y)
 	{
 		Fireball fireball = mUnreleasedFireballs.get(id);
-		if (fireball != null)
-			fireball.setPos(x, y);
+		if (fireball == null)
+			return;
+
+		// Test if fireball hasn't left the correct caster's area
+		Wizard caster = fireball.getCaster();
+		Wizard areaOwner = getCastingAreaOwner((int)x);
+		fireball.setActive(caster == areaOwner);
+
+		fireball.setPos(x, y);
 	}
 
 	public void cancelFireball(int id)
@@ -318,6 +326,13 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		if (fireball == null)
 			return;
 
+		// If it's not active, it's not in the correct casting zone.
+		if (!fireball.isActive())
+		{
+			cancelFireball(id);
+			return;
+		}
+
 		int speed = mGameAttributes.fireballSpeedPx != GameAttributes.NOT_SET
 				? mGameAttributes.fireballSpeedPx
 				: mGameAttributes.fireballSpeedDp; // only a backup, Px should always be set.
@@ -338,4 +353,20 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(shield);
 	}
 	 */
+
+	/**
+	 * Gets the owning Wizard of the casting area where the x falls under, or null if the area is neutral.
+	 * @param x X coordinate to check
+	 * @return <code>Wizard</code> reference to the Wizard associated with the area where x falls under, or null if it's a neutral area.
+	 */
+	private Wizard getCastingAreaOwner(int x)
+	{
+		Wizard caster = null;
+		if (x <= mGameAttributes.castingAreaWidth)
+			caster = mWizard1;
+		else if (x >= mGameAttributes.viewBounds.width() - mGameAttributes.castingAreaWidth)
+			caster = mWizard2;
+
+		return caster;
+	}
 }

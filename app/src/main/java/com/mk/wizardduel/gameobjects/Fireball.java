@@ -41,6 +41,7 @@ public class Fireball extends GameObject
 	{
 		resetDimensions();
 		setActive(false);
+		mSentFlying = false;
 		pool.release(this);
 	}
 
@@ -99,4 +100,7 @@ public class Fireball extends GameObject
 	{
 		// TODO
 	}
+
+	// expose setActive() as public
+	@Override public void setActive(boolean active) { super.setActive(active); }
 }
