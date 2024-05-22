@@ -14,7 +14,7 @@ import com.mk.wizardduel.services.GameService;
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.views.GameView;
 
-public class GameActivity extends AppCompatActivity
+public class GameActivity extends ImmersiveActivity
 {
 	/** Service running the game's logic. Runs on a worker thread. */
 	private GameView mGameView;

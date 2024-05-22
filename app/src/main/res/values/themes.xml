@@ -1,17 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.WizardDuel" parent="Theme.Material3.Light.NoActionBar" />
 
     <!-- ONLY LIGHT THEME, GAME IS STYLISED -->
     <style name="Theme.WizardDuel" parent="Base.Theme.WizardDuel">
+        <item name = "android:windowFullscreen">true</item>
+
         <item name="android:windowBackground">@drawable/background</item>
-
         <item name="colorPrimary">@color/pencil</item>
-
         <item name="materialButtonStyle">@style/UI.Button</item>
-
         <!-- For some unknowable reason, the line below breaks all toggle buttons -->
         <!-- <item name="android:buttonStyleToggle">@style/UI.Button.Toggle</item> -->
-
         <item name="android:textViewStyle">@style/UI.Text</item>
     </style>
 </resources>

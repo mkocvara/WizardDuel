@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.utils.AnimHandler;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener
+public class MainActivity extends ImmersiveActivity implements View.OnClickListener
 {
 	private Button mPlayBtn, mOptionsBtn;
 	private AnimHandler mAnimHandler;

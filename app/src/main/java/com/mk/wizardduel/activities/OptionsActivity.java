@@ -13,7 +13,7 @@ import com.mk.wizardduel.utils.SimplePreferences;
 import com.mk.wizardduel.views.ToggleButtonDual;
 import com.mk.wizardduel.utils.AnimHandler;
 
-public class OptionsActivity extends AppCompatActivity implements View.OnClickListener
+public class OptionsActivity extends ImmersiveActivity implements View.OnClickListener
 {
 	private Button mBtnBack;
 	private ToggleButtonDual mTglSound, mTglAnim;
