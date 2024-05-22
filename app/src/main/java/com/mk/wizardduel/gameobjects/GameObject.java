@@ -40,6 +40,7 @@ public abstract class GameObject
 	private int mHeight = -1, mWidth = -1;
 	private State mOjectState = State.INACTIVE;
 	private boolean mCollideable = false;
+	private final Vector2D mCollisionInset = new Vector2D(0f, 0f);
 
 	public State getObjectState() { return mOjectState; }
 
@@ -119,6 +120,11 @@ public abstract class GameObject
 		path.lineTo(corners[0], corners[1]);
 
 		RectF bounds = getWorldBounds();
+		bounds.left -= mCollisionInset.x;
+		bounds.right -= mCollisionInset.x;
+		bounds.top -= mCollisionInset.y;
+		bounds.bottom -= mCollisionInset.y;
+
 		Rect clipRect = new Rect(
 				(int) bounds.left,
 				(int) bounds.top,
@@ -139,6 +145,7 @@ public abstract class GameObject
 	public @ColorInt int getTint() { return mTint; }
 	public boolean isCollideable() { return mCollideable; }
 	public boolean isActive() { return mOjectState == State.ACTIVE; }
+	public Vector2D getCollisionInset() { return mCollisionInset; }
 
 	public void setPos(Vector2D pos) { mPos.set(pos); }
 	public void setPos(float x, float y) { mPos.set(x, y); }
@@ -205,6 +212,7 @@ public abstract class GameObject
 	}
 
 	protected void setCollideable(boolean collideable) { mCollideable = collideable; }
+	protected void setCollisionInset(Vector2D inset) { mCollisionInset.set(inset); }
 
 	public void destroy() { mOjectState = State.REMOVED; }
 

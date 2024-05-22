@@ -9,6 +9,7 @@ import androidx.annotation.DrawableRes;
 
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.WizardApplication;
+import com.mk.wizardduel.utils.Vector2D;
 
 import kotlin.random.Random;
 
@@ -34,6 +35,7 @@ public class Wizard extends GameObject
 			return;
 		}
 
+		setCollisionInset(new Vector2D(35f, 50f));
 		init(wizardDrawable);
 	}
 

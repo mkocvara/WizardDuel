@@ -24,9 +24,6 @@ public class Fireball extends GameObject
 		return fireball;
 	}
 
-	private static final int COLLISION_INSET = 25;
-		// TODO consider putting in GameAttributes and passing those to GameObjects
-
 	private Wizard mCasterWizard;
 	private Vector2D mDirection;
 	private int mBaseSpeed;
@@ -42,6 +39,7 @@ public class Fireball extends GameObject
 		mFlyingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_flying_anim);
 
 		setCollideable(true);
+		setCollisionInset(new Vector2D(25f, 25f));
 		setActive(false);
 	}
 
@@ -130,15 +128,4 @@ public class Fireball extends GameObject
 
 	// expose setActive() as public
 	@Override public void setActive(boolean active) { super.setActive(active); }
-
-	@Override
-	public RectF getWorldBounds()
-	{
-		RectF bounds = super.getWorldBounds();
-		bounds.left -= COLLISION_INSET;
-		bounds.top -= COLLISION_INSET;
-		bounds.right -= COLLISION_INSET;
-		bounds.bottom -= COLLISION_INSET;
-		return bounds;
-	}
 }
