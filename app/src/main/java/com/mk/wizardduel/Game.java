@@ -15,7 +15,6 @@ import java.util.Iterator;
 public class Game extends ViewModel
 {
 	protected ArrayList<GameObject> mGameObjects = new ArrayList<>();
-	private ArrayList<AnimationDrawable> mAnims = new ArrayList<>();
 
 	private boolean mStarted = false;
 
@@ -29,15 +28,22 @@ public class Game extends ViewModel
 		if (!mGameObjects.contains(object))
 		{
 			mGameObjects.add(object);
-
-			AnimationDrawable anim = object.getAnim();
-			if (anim != null)
-				mAnims.add(anim);
 		}
 	}
 
 	public int getNumObjects() { return mGameObjects.size(); }
-	public ArrayList<AnimationDrawable> getAllAnims() { return mAnims; }
+	public ArrayList<AnimationDrawable> getAllAnims()
+	{
+		ArrayList<AnimationDrawable> anims = new ArrayList<>();
+		for (GameObject go : mGameObjects)
+		{
+			AnimationDrawable anim = go.getAnim();
+			if (anim != null)
+				anims.add(anim);
+		}
+		return anims;
+	}
+
 	public boolean hasStarted() { return mStarted; }
 
 	public void update( double deltaTime )
@@ -53,19 +59,10 @@ public class Game extends ViewModel
 				go.update(deltaTime);
 
 			if (go.getObjectState() == GameObject.State.REMOVED)
-				removeObject(it, go);
+				it.remove();
 		}
 
 		handleCollisions();
-	}
-
-	private void removeObject(Iterator<GameObject> it, GameObject go)
-	{
-		AnimationDrawable anim = go.getAnim();
-		if (anim != null)
-			mAnims.remove(anim);
-
-		it.remove();
 	}
 
 	public void draw(Canvas canvas)

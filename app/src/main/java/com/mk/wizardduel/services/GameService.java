@@ -81,7 +81,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	private Game mGame;
 	private boolean mInitialised = false; // TODO use properly
 	private AnimHandler mAnimHandler;
-	private ArrayList<AnimationDrawable> cachedAllAnims;
+	private ArrayList<AnimationDrawable> mCachedAllAnims;
 	final private Rect mViewBounds = new Rect();
 	private GameAttributes mGameAttributes = null;
 	private GameInputManager mGameInputManager;
@@ -146,8 +146,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// Start various components
 		mAnimHandler = new AnimHandler(getLifecycle(), true); // TODO anim list doesn't update: fix
 		getLifecycle().addObserver(mAnimHandler);
-		cachedAllAnims = mGame.getAllAnims();
-		handleAnims(cachedAllAnims);
+		mCachedAllAnims = new ArrayList<>(mGame.getAllAnims());
+		handleAnims(mCachedAllAnims);
 
 		mGameInputManager = new GameInputManager(this, ViewConfiguration.get(this));
 
@@ -213,16 +213,22 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	{
 		ArrayList<AnimationDrawable> currAllAnims = mGame.getAllAnims();
 
-		ArrayList<AnimationDrawable> animsToRemove = new ArrayList<>(cachedAllAnims);
+		ArrayList<AnimationDrawable> animsToRemove = new ArrayList<>(mCachedAllAnims);
 		animsToRemove.removeAll(currAllAnims);
 
 		ArrayList<AnimationDrawable> animsToAdd = new ArrayList<>(currAllAnims);
-		animsToAdd.removeAll(cachedAllAnims);
+		animsToAdd.removeAll(mCachedAllAnims);
 
 		if (!animsToRemove.isEmpty())
+		{
 			mAnimHandler.removeAnims(animsToRemove);
+			mCachedAllAnims.removeAll(animsToRemove);
+		}
 		if (!animsToAdd.isEmpty())
+		{
 			handleAnims(animsToAdd);
+			mCachedAllAnims.addAll(animsToAdd);
+		}
 	}
 
 	private void handleAnims(@NonNull ArrayList<AnimationDrawable> anims)

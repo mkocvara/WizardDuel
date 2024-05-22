@@ -54,8 +54,11 @@ public class AnimHandler implements DefaultLifecycleObserver
 	 */
 	public void addAnim(@NonNull AnimationDrawable anim)
 	{
-			mAnims.add(anim);
-			if (mAnimating) anim.start();
+		if (mAnims.contains(anim))
+			return;
+
+		mAnims.add(anim);
+		if (mAnimating) anim.start();
 	}
 
 	/**
