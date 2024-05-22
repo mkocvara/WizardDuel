@@ -2,7 +2,6 @@ package com.mk.wizardduel.services;
 
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Binder;
@@ -308,14 +307,14 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		Fireball fireball = mUnreleasedFireballs.remove(id);
 		if (fireball != null)
 		{
-			fireball.recycle();
+			fireball.destroy();
 		}
 	}
 
 	public void cancelAllFireballs()
 	{
 		for (Fireball fireball : mUnreleasedFireballs.values())
-			fireball.recycle();
+			fireball.destroy();
 
 		mUnreleasedFireballs.clear();
 	}

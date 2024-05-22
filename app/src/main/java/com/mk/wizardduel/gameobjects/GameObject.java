@@ -7,6 +7,7 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -25,7 +26,6 @@ public abstract class GameObject
 	 * Rotation in degrees.
 	 */
 	public float rotation = 0.f;
-	public boolean collideable = false;
 
 	private final Vector2D mPos = new Vector2D(0.f,0.f);
 	private final Vector2D mAnchor = new Vector2D(0.f,0.f);
@@ -39,6 +39,7 @@ public abstract class GameObject
 	private Region mCachedCollisionRegion = null;
 	private int mHeight = -1, mWidth = -1;
 	private State mOjectState = State.INACTIVE;
+	private boolean mCollideable = false;
 
 	public State getObjectState() { return mOjectState; }
 
@@ -75,7 +76,7 @@ public abstract class GameObject
 	public RectF getWorldBounds()
 	{
 		if (mCachedWorldBounds != null)
-			return mCachedWorldBounds;
+			return new RectF(mCachedWorldBounds);
 
 		RectF viewBounds = new RectF();
 		viewBounds.right = getWidth();
@@ -85,7 +86,7 @@ public abstract class GameObject
 		transform.mapRect(viewBounds);
 
 		mCachedWorldBounds = viewBounds;
-		return viewBounds;
+		return new RectF(viewBounds);
 	}
 
 	/**
@@ -96,7 +97,7 @@ public abstract class GameObject
 	public Region getCollisionRegion()
 	{
 		if (mCachedCollisionRegion != null)
-			return mCachedCollisionRegion;
+			return new Region(mCachedCollisionRegion);
 
 		int h = getHeight();
 		int w = getWidth();
@@ -132,10 +133,11 @@ public abstract class GameObject
 		colRegion.setPath(path, clipRegion);
 
 		mCachedCollisionRegion = colRegion;
-		return colRegion;
+		return new Region(colRegion);
 	}
 
 	public @ColorInt int getTint() { return mTint; }
+	public boolean isCollideable() { return mCollideable; }
 	public boolean isActive() { return mOjectState == State.ACTIVE; }
 
 	public void setPos(Vector2D pos) { mPos.set(pos); }
@@ -202,6 +204,8 @@ public abstract class GameObject
 		mOjectState = active ? State.ACTIVE : State.INACTIVE;
 	}
 
+	protected void setCollideable(boolean collideable) { mCollideable = collideable; }
+
 	public void destroy() { mOjectState = State.REMOVED; }
 
 	/**
@@ -253,7 +257,7 @@ public abstract class GameObject
 	protected Matrix getTransform()
 	{
 		if (mCachedTransform != null)
-			return mCachedTransform;
+			return new Matrix(mCachedTransform);
 
 		Matrix transform = new Matrix();
 
@@ -266,6 +270,7 @@ public abstract class GameObject
 		transform.postScale(mScale.x, mScale.y);
 		transform.postTranslate(mPos.x, mPos.y);
 
-		return mCachedTransform = transform;
+		mCachedTransform = transform;
+		return new Matrix(transform);
 	}
 }

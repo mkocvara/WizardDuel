@@ -57,7 +57,7 @@ public class Wizard extends GameObject
 		setHeight(h);
 		setWidth(w);
 
-		collideable = true;
+		setCollideable(true);
 		setActive(true);
 	}
 
@@ -72,11 +72,16 @@ public class Wizard extends GameObject
 	@Override
 	public void handleCollision(GameObject other)
 	{
-		/*/ TODO implement Eg.:
 		if (other instanceof Fireball)
 		{
-			loseHealth();
+			Fireball asFireball = (Fireball) other;
+			if (asFireball.getCaster() != this)
+				registerHit();
 		}
-		*/
+	}
+
+	private void registerHit()
+	{
+		Log.i("DEBUG:Collisions", "A Wizard got hit by the opponent's fireball. Ouch.");
 	}
 }

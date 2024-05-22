@@ -1,5 +1,6 @@
 package com.mk.wizardduel.gameobjects;
 
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
@@ -13,39 +14,52 @@ import com.mk.wizardduel.utils.Vector2D;
 public class Fireball extends GameObject
 {
 	private static final Pools.SynchronizedPool<Fireball> pool = new Pools.SynchronizedPool<>(50);
+
 	@NonNull
 	public static Fireball obtain()
 	{
 		Fireball fireball = pool.acquire();
-		return fireball != null ? fireball : new Fireball();
+		fireball = fireball != null ? fireball : new Fireball();
+		fireball.mInPool = false;
+		return fireball;
 	}
+
+	private static final int COLLISION_INSET = 25;
+		// TODO consider putting in GameAttributes and passing those to GameObjects
 
 	private Wizard mCasterWizard;
 	private Vector2D mDirection;
 	private int mBaseSpeed;
 
+	private boolean mInPool = false;
 	private boolean mSentFlying = false;
-	private Drawable mCastingDrawable, mFlyingDrawable;
+	private final Drawable mCastingDrawable, mFlyingDrawable;
+
 
 	public Fireball()
 	{
 		mCastingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_anim);
 		mFlyingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_flying_anim);
 
+		setCollideable(true);
 		setActive(false);
 	}
 
 	public Wizard getCaster() { return mCasterWizard; }
 
-	public void recycle()
+	protected void recycle()
 	{
-		resetDimensions();
 		setActive(false);
 		mSentFlying = false;
+		mInPool = true;
 		pool.release(this);
 	}
 
-	@Override public void destroy() { recycle(); }
+	@Override public void destroy()
+	{
+		if (!mInPool)
+			recycle();
+	}
 
 	public void init(@NonNull Wizard caster, @NonNull Vector2D position)
 	{
@@ -54,6 +68,7 @@ public class Fireball extends GameObject
 
 		setTint(mCasterWizard.getTint());
 		setDrawable(mCastingDrawable);
+		resetDimensions();
 
 		setActive(true);
 	}
@@ -96,11 +111,34 @@ public class Fireball extends GameObject
 	}
 
 	@Override
-	public void handleCollision(GameObject other)
+	public void handleCollision(@NonNull GameObject other)
 	{
-		// TODO
+		//Log.i("DEBUG:Collisions", "Collision detected between a fireball and " + other);
+
+		if (other instanceof Fireball)
+		{
+			this.destroy();
+		}
+
+		else if (other instanceof Wizard)
+		{
+			Wizard asWizard = (Wizard) other;
+			if (asWizard != getCaster())
+				this.destroy();
+		}
 	}
 
 	// expose setActive() as public
 	@Override public void setActive(boolean active) { super.setActive(active); }
+
+	@Override
+	public RectF getWorldBounds()
+	{
+		RectF bounds = super.getWorldBounds();
+		bounds.left -= COLLISION_INSET;
+		bounds.top -= COLLISION_INSET;
+		bounds.right -= COLLISION_INSET;
+		bounds.bottom -= COLLISION_INSET;
+		return bounds;
+	}
 }

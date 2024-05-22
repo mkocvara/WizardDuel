@@ -81,13 +81,13 @@ public class Game extends ViewModel
 		for (int i = 0; i < numObjects-1; i++)
 		{
 			go1 = mGameObjects.get(i);
-			if (!go1.isActive() || !go1.collideable)
+			if (!go1.isActive() || !go1.isCollideable())
 				continue;
 
 			for (int j = 1; j < numObjects; j++)
 			{
 				go2 = mGameObjects.get(j);
-				if (!go2.isActive() || !go2.collideable)
+				if (!go2.isActive() || !go2.isCollideable() || go1 == go2)
 					continue;
 
 				Region collisionRegion1 = go1.getCollisionRegion();
