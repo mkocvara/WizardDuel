@@ -24,7 +24,7 @@ public class GameAttributes
 	public RectF wizard2RelativeBounds = new RectF();
 
 	public float fireballRelativeHeight = NOT_SET;
-	public int fireballSpeedDp = 6; // in dp, must be converted to pixels
+	public int fireballSpeedDp = 375; // in dp, must be converted to pixels
 	public int fireballSpeedPx = NOT_SET; // in dp, must be converted to pixels
 	public int hitHatHeightDip = 55;
 	public int hitHatWidthDip = 67;

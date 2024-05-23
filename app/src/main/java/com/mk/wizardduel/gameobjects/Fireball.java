@@ -128,7 +128,7 @@ public class Fireball extends Spell
 		if (mFireballState == FireballState.FLYING)
 		{
 			// Add direction vector timed by speed to the position to move
-			setPos(getPos().getAdded(mDirection.getMultiplied(mBaseSpeed)));
+			setPos(getPos().getAdded(mDirection.getMultiplied(mBaseSpeed * (float)deltaTime)));
 		}
 
 		else if (mFireballState == FireballState.IMPACTING)
