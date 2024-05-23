@@ -273,10 +273,10 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 	private void createBoundaries()
 	{
-		Rect leftBoundary = new Rect(-1, -1, 0, mViewBounds.bottom + 1);
-		Rect topBoundary = new Rect(-1, -1, mViewBounds.right + 1, 0);
-		Rect rightBoundary = new Rect(mViewBounds.right, -1, mViewBounds.right + 1, mViewBounds.bottom + 1);
-		Rect bottomBoundary = new Rect(-1, mViewBounds.bottom, mViewBounds.right + 1, mViewBounds.bottom + 1);
+		Rect leftBoundary = new Rect(-1, 0, 0, mViewBounds.bottom);
+		Rect topBoundary = new Rect(0, -1, mViewBounds.right, 0);
+		Rect rightBoundary = new Rect(mViewBounds.right, 0, mViewBounds.right + 1, mViewBounds.bottom);
+		Rect bottomBoundary = new Rect(0, mViewBounds.bottom, mViewBounds.right, mViewBounds.bottom + 1);
 
 		Vector2D faceLeft = new Vector2D(1, 0);
 		Vector2D faceTop = new Vector2D(0, 1);

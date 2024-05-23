@@ -97,8 +97,8 @@ public class Game extends ViewModel
 
 				if (collisionDetected)
 				{
-					go1.handleCollision(go2);
-					go2.handleCollision(go1);
+					go1.handleCollision(go2, collisionRegion1);
+					go2.handleCollision(go1, collisionRegion1);
 				}
 			}
 		}

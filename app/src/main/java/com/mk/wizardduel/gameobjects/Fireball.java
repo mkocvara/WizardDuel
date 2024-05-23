@@ -1,5 +1,8 @@
 package com.mk.wizardduel.gameobjects;
 
+import android.graphics.Rect;
+import android.graphics.Region;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
@@ -9,9 +12,21 @@ import com.mk.wizardduel.R;
 import com.mk.wizardduel.WizardApplication;
 import com.mk.wizardduel.utils.Vector2D;
 
+import java.util.logging.Handler;
+
 public class Fireball extends GameObject
 {
+	private enum FireballState
+	{
+		RECYCLED,
+		CASTING,
+		FLYING,
+		IMPACTING
+	}
+
 	private static final Pools.SynchronizedPool<Fireball> pool = new Pools.SynchronizedPool<>(50);
+
+	private static final float IMPACT_DRAWABLE_UPSCALE = 2.5f;
 
 	@NonNull
 	public static Fireball obtain()
@@ -27,21 +42,38 @@ public class Fireball extends GameObject
 	private int mBaseSpeed;
 
 	private boolean mInPool = false;
-	private boolean mSentFlying = false;
-	private final Drawable mCastingDrawable, mFlyingDrawable;
+	private FireballState mFireballState = FireballState.RECYCLED;
+	private final AnimationDrawable mCastingDrawable, mFlyingDrawable, mImpactDrawable;
 
 	private final double BOUNCE_TIMEOUT = 0.5f;
 	private double mBounceTimeout = 0.f;
-
+	private final double mImpactAnimLen;
+	private double mImpactTimer = 0;
 
 	public Fireball()
 	{
-		mCastingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_anim);
-		mFlyingDrawable = WizardApplication.getDrawableFromResourceId(R.drawable.fireball_flying_anim);
+		mCastingDrawable = (AnimationDrawable) WizardApplication.getDrawableFromResourceId(R.drawable.fireball_anim);
+		mFlyingDrawable = (AnimationDrawable) WizardApplication.getDrawableFromResourceId(R.drawable.fireball_flying_anim);
+		mImpactDrawable = (AnimationDrawable) WizardApplication.getDrawableFromResourceId(R.drawable.fireball_impact_anim);
 
-		setCollideable(true);
+		// Determine the length of the impact drawable
+		mImpactDrawable.setOneShot(true);
+		float numFrames = mImpactDrawable.getNumberOfFrames();
+		float totalDurationMs = 0.f;
+		for (int i = 0; i < numFrames; i++)
+			totalDurationMs += mImpactDrawable.getDuration(i);
+		mImpactAnimLen = totalDurationMs / 1000.f;
+
 		setCollisionInset(new Vector2D(25f, 25f));
 		setActive(false);
+	}
+
+	@Override
+	public boolean isCollideable()
+	{
+		// Bypasses the GameObject mCollidable property.
+		// Safer and easier than changing that property on every state change.
+		return mFireballState == FireballState.FLYING;
 	}
 
 	public Wizard getCaster() { return mCasterWizard; }
@@ -49,7 +81,7 @@ public class Fireball extends GameObject
 	protected void recycle()
 	{
 		setActive(false);
-		mSentFlying = false;
+		mFireballState = FireballState.RECYCLED;
 		mInPool = true;
 		pool.release(this);
 	}
@@ -80,7 +112,6 @@ public class Fireball extends GameObject
 		int preH = getHeight();
 		int preW = getWidth();
 
-
 		setDrawable(mFlyingDrawable);
 
 		// Maintain height but correct for different aspect ratio.
@@ -91,7 +122,7 @@ public class Fireball extends GameObject
 
 		updateRotFromDir();
 
-		mSentFlying = true;
+		mFireballState = FireballState.FLYING;
 	}
 
 	@Override
@@ -102,32 +133,39 @@ public class Fireball extends GameObject
 		if (mBounceTimeout > 0)
 			mBounceTimeout -= deltaTime;
 
-		if (mSentFlying)
+		if (mFireballState == FireballState.FLYING)
 		{
 			// Add direction vector timed by speed to the position to move
 			setPos(getPos().getAdded(mDirection.getMultiplied(mBaseSpeed)));
 		}
+
+		else if (mFireballState == FireballState.IMPACTING)
+		{
+			if (mImpactTimer <= 0)
+				destroy();
+			else
+				mImpactTimer -= deltaTime;
+		}
 	}
 
 	@Override
-	public void handleCollision(@NonNull GameObject other)
+	public void handleCollision(@NonNull GameObject other, Region overlapRegion)
 	{
 		//Log.i("DEBUG:Collisions", "Collision detected between a fireball and " + other);
 
-		// Only apply collision logic if the fireball has been released.
-		if (!mSentFlying)
+		if (mFireballState != FireballState.FLYING)
 			return;
 
 		if (other instanceof Fireball)
 		{
-			this.destroy();
+			this.impact(getImpactNormal(other), overlapRegion);
 		}
 
 		else if (other instanceof Wizard)
 		{
 			Wizard asWizard = (Wizard) other;
 			if (asWizard != getCaster())
-				this.destroy();
+				this.impact(getImpactNormal(other), overlapRegion);
 		}
 
 		else if (other instanceof Boundary)
@@ -136,7 +174,7 @@ public class Fireball extends GameObject
 			if (asBoundary.isReflective())
 				bounce(asBoundary.getSurfaceNormal());
 			else
-				this.destroy();
+				this.impact(asBoundary.getSurfaceNormal(), overlapRegion);
 		}
 	}
 
@@ -159,5 +197,38 @@ public class Fireball extends GameObject
 		mDirection.subtract(normal.getMultiplied(2 * mDirection.dot(normal))); // Mirror reflection
 		updateRotFromDir();
 		mBounceTimeout = BOUNCE_TIMEOUT;
+	}
+
+	private void impact(Vector2D impactNormal, Region overlapRegion)
+	{
+		setDrawable(mImpactDrawable);
+
+		int newHeight = (int) (getHeight() * IMPACT_DRAWABLE_UPSCALE);
+		resetDimensions();
+		setHeight(newHeight, true);
+
+		mDirection.set(impactNormal);
+		mDirection.negate();
+		updateRotFromDir();
+
+		// Set new position to be half the object's width (0.5 anchor) away from the centre point of impact
+		// in the direction of the impact normal, in order to visually touch the impact point.
+		Rect overlapBounds = overlapRegion.getBounds();
+		Vector2D centreOfImpact = new Vector2D(overlapBounds.exactCenterX(), overlapBounds.exactCenterY());
+		Vector2D newPos = centreOfImpact.getAdded(impactNormal.getMultiplied(getWidth()/2f));
+		setPos(newPos);
+
+		mImpactTimer = mImpactAnimLen;
+
+		mFireballState = FireballState.IMPACTING;
+	}
+
+	private Vector2D getImpactNormal(GameObject impactObject)
+	{
+		Vector2D otherPos = impactObject.getCentrePoint();
+		Vector2D impactNormal = otherPos.getSubtracted(this.getPos());
+		impactNormal.negate();
+		impactNormal.normalize();
+		return impactNormal;
 	}
 }

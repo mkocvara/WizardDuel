@@ -2,6 +2,7 @@ package com.mk.wizardduel.gameobjects;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.Region;
 
 import androidx.annotation.NonNull;
 
@@ -41,7 +42,7 @@ public class Boundary extends GameObject
 	}
 
 	@Override
-	public void handleCollision(GameObject other)
+	public void handleCollision(GameObject other, Region overlapRegion)
 	{
 		// Nothing here, handled in Fireball to ensure each object
 		// duly handles its own responses to collisions.

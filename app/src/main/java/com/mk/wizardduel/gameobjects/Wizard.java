@@ -1,5 +1,6 @@
 package com.mk.wizardduel.gameobjects;
 
+import android.graphics.Region;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -72,7 +73,7 @@ public class Wizard extends GameObject
 	}
 
 	@Override
-	public void handleCollision(GameObject other)
+	public void handleCollision(GameObject other, Region overlapRegion)
 	{
 		if (other instanceof Fireball)
 		{

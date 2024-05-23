@@ -44,9 +44,9 @@ public abstract class GameObject
 
 	public State getObjectState() { return mOjectState; }
 
-	public Vector2D getPos() { return mPos; }
-	public Vector2D getAnchor() { return mAnchor; }
-	public Vector2D getScale() { return mScale; }
+	public Vector2D getPos() { return new Vector2D(mPos); }
+	public Vector2D getAnchor() { return new Vector2D(mAnchor); }
+	public Vector2D getScale() { return new Vector2D(mScale); }
 
 	public int getHeight() {
 		if (mHeight != -1)
@@ -88,6 +88,12 @@ public abstract class GameObject
 
 		mCachedWorldBounds = viewBounds;
 		return new RectF(viewBounds);
+	}
+
+	public Vector2D getCentrePoint()
+	{
+		RectF worldBounds = getWorldBounds();
+		return new Vector2D(worldBounds.centerX(), worldBounds.centerY());
 	}
 
 	/**
@@ -260,7 +266,7 @@ public abstract class GameObject
 		canvas.restore();
 	}
 
-	public abstract void handleCollision(GameObject other);
+	public abstract void handleCollision(GameObject other, Region overlapRegion);
 
 	protected Matrix getTransform()
 	{
