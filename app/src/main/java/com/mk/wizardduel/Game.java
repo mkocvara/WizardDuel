@@ -14,14 +14,12 @@ import java.util.Iterator;
 
 public class Game extends ViewModel
 {
+	public GameData gameData = new GameData();
 	protected ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
 	private boolean mStarted = false;
 
-	public Game()
-	{
-		Log.i("DEBUG", "Game constructed.");
-	}
+	public Game() { }
 
 	public void addObject(GameObject object)
 	{

@@ -248,14 +248,9 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// Set View Bounds
 		mViewBounds.set(mGameAttributes.viewBounds);
 
-		// Only create wizards & boundaries the first time this service is started
-		// to avoid duplicating them every time the activity is recreated.
-		if (!mGame.hasStarted())
-		{
-			createWizards();
-			createShields();
-			createBoundaries();
-		}
+		createWizards();
+		createShields();
+		createBoundaries();
 
 		// Unpack necessary attributes
 		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
@@ -366,42 +361,68 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 	private void createWizards()
 	{
-		mWizard1 = new Wizard();
-		mWizard2 = new Wizard();
+		if (!mGame.hasStarted())
+		{
+			mWizard1 = new Wizard(mGameAttributes);
+			mWizard2 = new Wizard(mGameAttributes);
 
-		// Set Wizard sizes and positions
-		int scaledHeight1 = (int)(mViewBounds.height() * (mGameAttributes.wizard1RelativeBounds.bottom - mGameAttributes.wizard1RelativeBounds.top));
-		mWizard1.setHeight(scaledHeight1, true);
+			// Set Wizard sizes and positions
+			int scaledHeight1 = (int)(mViewBounds.height() * (mGameAttributes.wizard1RelativeBounds.bottom - mGameAttributes.wizard1RelativeBounds.top));
+			mWizard1.setHeight(scaledHeight1, true);
 
-		int scaledHeight2 = (int)(mViewBounds.height() * (mGameAttributes.wizard2RelativeBounds.bottom - mGameAttributes.wizard2RelativeBounds.top));
-		mWizard2.setHeight(scaledHeight2, true);
+			int scaledHeight2 = (int)(mViewBounds.height() * (mGameAttributes.wizard2RelativeBounds.bottom - mGameAttributes.wizard2RelativeBounds.top));
+			mWizard2.setHeight(scaledHeight2, true);
 
-		mWizard1.setPos((int)(mViewBounds.width() * mGameAttributes.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * mGameAttributes.wizard1RelativeBounds.top));
-		mWizard2.setPos((int)(mViewBounds.width() * mGameAttributes.wizard2RelativeBounds.right), (int)(mViewBounds.height() * mGameAttributes.wizard2RelativeBounds.top));
+			mWizard1.setPos((int)(mViewBounds.width() * mGameAttributes.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * mGameAttributes.wizard1RelativeBounds.top));
+			mWizard2.setPos((int)(mViewBounds.width() * mGameAttributes.wizard2RelativeBounds.right), (int)(mViewBounds.height() * mGameAttributes.wizard2RelativeBounds.top));
 
-		mWizard2.setAnchor(1.f, 0.f);
-		mWizard2.rotation = 180.f;
+			mWizard2.setAnchor(1.f, 0.f);
+			mWizard2.rotation = 180.f;
 
-		mWizard1.setTint(mGameAttributes.player1Colour);
-		mWizard2.setTint(mGameAttributes.player2Colour);
+			mWizard1.setTint(mGameAttributes.player1Colour);
+			mWizard2.setTint(mGameAttributes.player2Colour);
 
-		mGame.addObject(mWizard1);
-		mGame.addObject(mWizard2);
+			mGame.addObject(mWizard1);
+			mGame.addObject(mWizard2);
+
+			mGame.gameData.registerWizards(mWizard1, mWizard2);
+		}
+		else
+		{
+			mWizard1 = mGame.gameData.getWizard1();
+			mWizard2 = mGame.gameData.getWizard2();
+		}
 	}
 
 	private void createShields()
 	{
-		Shield shield1 = new Shield(mWizard1);
-		Shield shield2 = new Shield(mWizard2);
+		if (!mGame.hasStarted())
+		{
+			Shield shield1 = new Shield(mWizard1);
+			Shield shield2 = new Shield(mWizard2);
 
-		mGame.addObject(shield1);
-		mGame.addObject(shield2);
+			mGame.addObject(shield1);
+			mGame.addObject(shield2);
 
-		ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
-		ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
+			ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
+			ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
 
-		mShields.put(mWizard1, shieldInfo1);
-		mShields.put(mWizard2, shieldInfo2);
+			mShields.put(mWizard1, shieldInfo1);
+			mShields.put(mWizard2, shieldInfo2);
+
+			mGame.gameData.registerShields(shield1, shield2);
+		}
+		else
+		{
+			Shield shield1 = mGame.gameData.getShield1();
+			Shield shield2 = mGame.gameData.getShield2();
+
+			ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
+			ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
+
+			mShields.put(mWizard1, shieldInfo1);
+			mShields.put(mWizard2, shieldInfo2);
+		}
 	}
 
 	private void createBoundaries()
