@@ -135,7 +135,7 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		message.obj = event;
 		message.arg1 = SHOW_PRESS;
 
-		mHandler.sendMessageAtTime(message, event.getDownTime() + ViewConfiguration.getTapTimeout());
+		mHandler.sendMessageAtTime(message, event.getEventTime() + ViewConfiguration.getTapTimeout());
 	}
 
 	public void onPointerUp(@NonNull MotionEvent event, int pointerId)
