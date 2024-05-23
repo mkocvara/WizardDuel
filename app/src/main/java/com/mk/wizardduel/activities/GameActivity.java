@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
@@ -115,15 +116,6 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 				hpImgView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.hit_hat_anim));
 				hpImgView.getDrawable().setTint(tint);
 
-				/*// Actually... the UI animating like that too make the screen too busy, it's distracting.
-				  // Keeping it here for at least one commit in case I change my mind.
-				AnimationDrawable anim = (AnimationDrawable) hpImgView.getDrawable();
-				if (anim != null)
-					mAnimHandler.addAnim(anim);
-				else
-					Log.w("GameActivity", "Hit Hat drawable is not an AnimationDrawable and will not animate.");
-				*/
-
 				int height = (int) WizardApplication.dipToPx(gameAttributes.hitHatHeightDip);
 				int width = (int) WizardApplication.dipToPx(gameAttributes.hitHatWidthDip);
 				hpImgView.setLayoutParams(new ViewGroup.LayoutParams(width, height));
@@ -172,5 +164,8 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	private void gameOver()
 	{
 		Log.i("DEBUG", "Game Over!");
+
+		// TEMPORARY; TODO replace with proper Game Over screen later
+		new Handler().postDelayed(this::finish, 3000);
 	}
 }
