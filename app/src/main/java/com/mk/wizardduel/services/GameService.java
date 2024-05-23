@@ -472,7 +472,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		}
 
 		Wizard caster = getCastingAreaOwner((int)position.x);
-		if (caster == null)
+		ShieldInfo shield = mShields.get(caster);
+		if (caster == null || shield == null || shield.isShieldActive())
 			return;
 
 		Fireball fireball = Fireball.obtain();
@@ -579,6 +580,12 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// Check that both points are within the same casting area (and also not outside either)
 		if (caster == null || caster != getCastingAreaOwner((int)point2.x))
 			return false;
+
+		// If a shield is already active, don't let other pointers steal it.
+		ShieldInfo shield = mShields.get(caster);
+		if (shield == null || shield.isShieldActive())
+			return false;
+
 
 		Log.i("DEBUG:Touch", "SHIELD Cast! points: " + pointerId1 + " and " + pointerId2);
 		ShieldInfo shieldInfo = mShields.get(caster);
