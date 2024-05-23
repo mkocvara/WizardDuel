@@ -8,9 +8,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.GestureDetector;
-import android.view.ScaleGestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -20,6 +18,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import com.mk.wizardduel.GameAttributes;
 import com.mk.wizardduel.R;
+import com.mk.wizardduel.WizardApplication;
 import com.mk.wizardduel.services.GameService;
 
 public class GameView extends View
@@ -30,7 +29,6 @@ public class GameView extends View
 	private boolean initialised = false;
 
 	private GestureDetector mGestureDetector;
-	private ScaleGestureDetector mScaleGestureDetector;
 
 	private Drawable mCastingAreaDrawable1, mCastingAreaDrawable2;
 
@@ -70,10 +68,7 @@ public class GameView extends View
 			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
 
 			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, NOT_SET);
-			mGameAttributes.fireballSpeedPx = (int)TypedValue.applyDimension(
-					TypedValue.COMPLEX_UNIT_DIP,
-					mGameAttributes.fireballSpeedDp,
-					getResources().getDisplayMetrics());
+			mGameAttributes.fireballSpeedPx = (int) WizardApplication.dipToPx(mGameAttributes.fireballSpeedDp);
 
 			mGameAttributes.castingAreaRelativeWidth = attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.castingAreaRelativeWidth);
 		}
@@ -103,8 +98,6 @@ public class GameView extends View
 
 		mGestureDetector = new GestureDetector(getContext(), gameService.getGameInputHandler());
 		mGestureDetector.setOnDoubleTapListener(gameService.getGameInputHandler());
-		mScaleGestureDetector = new ScaleGestureDetector(getContext(), gameService.getGameInputHandler());
-		//mScaleGestureDetector.setQuickScaleEnabled(true); // TODO check when implementing shield
 
 		initialised = true;
 	}
@@ -142,7 +135,6 @@ public class GameView extends View
 	public boolean onTouchEvent(MotionEvent motionEvent)
 	{
 		boolean result = mGestureDetector.onTouchEvent(motionEvent);
-		result = mScaleGestureDetector.onTouchEvent(motionEvent) || result;
 		result = mGameService.getGameInputHandler().onTouch(motionEvent) || result;
 
 		return result;

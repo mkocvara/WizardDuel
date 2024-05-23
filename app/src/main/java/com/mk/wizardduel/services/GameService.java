@@ -20,6 +20,7 @@ import com.mk.wizardduel.Game;
 import com.mk.wizardduel.GameAttributes;
 import com.mk.wizardduel.gameobjects.Boundary;
 import com.mk.wizardduel.gameobjects.Fireball;
+import com.mk.wizardduel.gameobjects.Shield;
 import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.utils.AnimHandler;
 import com.mk.wizardduel.GameInputManager;
@@ -74,6 +75,121 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		public void setPaused(boolean paused) { mPaused = paused; }
 	}
 
+	private class ShieldInfo
+	{
+		private final Shield mShield;
+		private int mPointerId1;
+		private int mPointerId2;
+
+		private final Vector2D mPoint1 = new Vector2D();
+		private final Vector2D mPoint2 = new Vector2D();
+
+		boolean mPoint1Updated = false;
+		boolean mPoint2Updated = false;
+
+		public ShieldInfo(Shield shield) { mShield = shield; }
+		public void activate(int id1, int id2, Vector2D point1, Vector2D point2)
+		{
+			if (isShieldActive())
+				Log.w("GameService.ShieldInfo", "Activating an already active shield.");
+
+			mPointerId1 = id1;
+			mPointerId2 = id2;
+
+			mShield.cast(point1, point2);
+		}
+
+		public void updatePoint(int id, Vector2D point)
+		{
+			if (!isShieldActive())
+				return;
+
+			if (id == mPointerId1)
+			{
+				mPoint1.set(point);
+				mPoint1Updated = true;
+			}
+			else if (id == mPointerId2)
+			{
+				mPoint2.set(point);
+				mPoint2Updated = true;
+			}
+
+			if (mPoint1Updated && mPoint2Updated)
+			{
+				// TODO noting an issue here where sometimes it thinks the a shield's point is in neutral zone when it's not.
+				// First going to do interping to casting area border, then investigate this.
+
+				Wizard caster = mShield.getCaster();
+
+				Wizard point1CastingArea = getCastingAreaOwner((int)mPoint1.x);
+				Wizard point2CastingArea = getCastingAreaOwner((int)mPoint2.x);
+
+				// Check that both points are still within the right casting area (and also not outside either)
+				if (point1CastingArea != caster || point2CastingArea != caster)
+				{
+					// If both are out, just stop the spell.
+					if (point1CastingArea != caster && point2CastingArea != caster)
+					{
+						mShield.stopCasting(); // TODO find bug which makes the shield not show ever again
+					}
+					else
+					{
+						// Interpolate the point on the shield line that is at the casting border and
+						// use that instead to clip the shield at the border.
+						Vector2D inside = (point1CastingArea == caster) ? mPoint1 : mPoint2;
+						Vector2D outside = (point1CastingArea != caster) ? mPoint1 : mPoint2;
+						float spanX = Math.abs(outside.x - inside.x);
+						float spanY = Math.abs(outside.y - inside.y);
+
+						float castBorderX = (inside.x < outside.x)
+								? mGameAttributes.castingAreaWidth
+								: mViewBounds.width() - mGameAttributes.castingAreaWidth;
+
+						float inCastingAreaSpanX = castBorderX - inside.x;
+						float inFraction = inCastingAreaSpanX / spanX;
+						float yMulti = (inside.y < outside.y) ? 1f : -1f;
+						yMulti *= (inside.x < outside.x) ? 1f : -1f;
+
+						float newX = inside.x + inCastingAreaSpanX; // x works
+						float newY = inside.y + spanY * inFraction * yMulti;
+
+						outside.set(newX, newY);
+					}
+					return;
+				}
+
+				mShield.updatePosition(mPoint1, mPoint2);
+				mPoint1Updated = false;
+				mPoint2Updated = false;
+			}
+		}
+
+		public void deactivate()
+		{
+			if (!isShieldActive())
+				return;
+
+			mShield.stopCasting();
+
+			mPoint1Updated = false;
+			mPoint2Updated = false;
+		}
+
+		public Shield getShield() { return mShield; }
+		public boolean isShieldActive() { return mShield.isActive(); }
+		public int getPointerId1() { return mPointerId1; }
+		public int getPointerId2() { return mPointerId2; }
+
+		public boolean usesPointer(int pointerId)
+		{
+			if (!isShieldActive())
+				return false;
+
+			return pointerId == mPointerId1 || pointerId == mPointerId2;
+		}
+	}
+
 	private final GameThread mGameThread = new GameThread();
 	private final IBinder mBinder = new GameBinder();
 	private Runnable mGameTickCallback = null;
@@ -86,6 +202,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	private GameAttributes mGameAttributes = null;
 	private GameInputManager mGameInputManager;
 	private Wizard mWizard1, mWizard2;
+	private final HashMap<Wizard, ShieldInfo> mShields = new HashMap<>();
 	private int mFireballHeight = 0;
 
 	/** Dictionary of fireballs that are being cast (pointers down) keyed by pointer ID. */
@@ -136,6 +253,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		if (!mGame.hasStarted())
 		{
 			createWizards();
+			createShields();
 			createBoundaries();
 		}
 
@@ -271,6 +389,21 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(mWizard2);
 	}
 
+	private void createShields()
+	{
+		Shield shield1 = new Shield(mWizard1);
+		Shield shield2 = new Shield(mWizard2);
+
+		mGame.addObject(shield1);
+		mGame.addObject(shield2);
+
+		ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
+		ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
+
+		mShields.put(mWizard1, shieldInfo1);
+		mShields.put(mWizard2, shieldInfo2);
+	}
+
 	private void createBoundaries()
 	{
 		Rect leftBoundary = new Rect(-1, 0, 0, mViewBounds.bottom);
@@ -315,39 +448,61 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(fireball);
 	}
 
-	public void moveFireball(int id, float x, float y)
+	public void moveSpell(int id, Vector2D pos)
 	{
+		for (ShieldInfo si : mShields.values()	)
+			si.updatePoint(id, pos);
+
 		Fireball fireball = mUnreleasedFireballs.get(id);
 		if (fireball == null)
 			return;
 
 		// Test if fireball hasn't left the correct caster's area
 		Wizard caster = fireball.getCaster();
-		Wizard areaOwner = getCastingAreaOwner((int)x);
+		Wizard areaOwner = getCastingAreaOwner((int)pos.x);
 		fireball.setActive(caster == areaOwner);
 
-		fireball.setPos(x, y);
+		fireball.setPos(pos);
 	}
 
-	public void cancelFireball(int id)
+	public void cancelSpell(int id)
 	{
 		Fireball fireball = mUnreleasedFireballs.remove(id);
 		if (fireball != null)
 		{
 			fireball.destroy();
+			return;
+		}
+
+		for (ShieldInfo si : mShields.values())
+		{
+			if (si.usesPointer(id))
+				si.deactivate();
 		}
 	}
 
-	public void cancelAllFireballs()
+	public void cancelAllSpells()
 	{
 		for (Fireball fireball : mUnreleasedFireballs.values())
 			fireball.destroy();
 
 		mUnreleasedFireballs.clear();
+
+		for (ShieldInfo si : mShields.values()	)
+			si.deactivate();
 	}
 
-	public void releaseFireball(int id, Vector2D direction)
+	public void releaseSpell(int id, Vector2D direction)
 	{
+		for (ShieldInfo si : mShields.values())
+		{
+			if (si.usesPointer(id))
+			{
+				si.deactivate();
+				return;
+			}
+		}
+
 		Fireball fireball = mUnreleasedFireballs.get(id);
 		if (fireball == null)
 			return;
@@ -355,7 +510,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// If it's not active, it's not in the correct casting zone.
 		if (!fireball.isActive())
 		{
-			cancelFireball(id);
+			cancelSpell(id);
 			return;
 		}
 
@@ -367,18 +522,31 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mUnreleasedFireballs.remove(id);
 	}
 
-	/* TODO
-	private void castShield(Wizard caster)
+	/** Returns true if shield was cast, or false if it wasn't. */
+	public boolean tryCastShield(int pointerId1, int pointerId2, Vector2D point1, Vector2D point2)
 	{
-		/* TODO
-		* changing width
-		* changing rot and pos
-	 	* persists until touch stops
-	 	*//*
+		// If these pointers are already used to cast fireballs, don't let them cast shield.
+		if (mUnreleasedFireballs.containsKey(pointerId1) || mUnreleasedFireballs.containsKey(pointerId2))
+			return false;
 
-		mGame.addObject(shield);
+		Wizard caster = getCastingAreaOwner((int)point1.x);
+
+		// Check that both points are within the same casting area (and also not outside either)
+		if (caster == null || caster != getCastingAreaOwner((int)point2.x))
+			return false;
+
+		Log.i("DEBUG:Touch", "SHIELD Cast! points: " + pointerId1 + " and " + pointerId2);
+		ShieldInfo shieldInfo = mShields.get(caster);
+		if (shieldInfo == null)
+		{
+			Log.e("DEBUG", "GameService.tryCastShield(): Shields have not been constructed properly.");
+			return false;
+		}
+
+		shieldInfo.activate(pointerId1, pointerId2, point1, point2);
+
+		return true;
 	}
-	 */
 
 	/**
 	 * Gets the owning Wizard of the casting area where the x falls under, or null if the area is neutral.

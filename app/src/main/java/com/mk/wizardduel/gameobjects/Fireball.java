@@ -3,7 +3,6 @@ package com.mk.wizardduel.gameobjects;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pools;
@@ -12,9 +11,7 @@ import com.mk.wizardduel.R;
 import com.mk.wizardduel.WizardApplication;
 import com.mk.wizardduel.utils.Vector2D;
 
-import java.util.logging.Handler;
-
-public class Fireball extends GameObject
+public class Fireball extends Spell
 {
 	private enum FireballState
 	{
@@ -27,6 +24,7 @@ public class Fireball extends GameObject
 	private static final Pools.SynchronizedPool<Fireball> pool = new Pools.SynchronizedPool<>(50);
 
 	private static final float IMPACT_DRAWABLE_UPSCALE = 2.5f;
+	private static final double BOUNCE_TIMEOUT = 0.5f;
 
 	@NonNull
 	public static Fireball obtain()
@@ -37,7 +35,6 @@ public class Fireball extends GameObject
 		return fireball;
 	}
 
-	private Wizard mCasterWizard;
 	private Vector2D mDirection;
 	private int mBaseSpeed;
 
@@ -45,7 +42,6 @@ public class Fireball extends GameObject
 	private FireballState mFireballState = FireballState.RECYCLED;
 	private final AnimationDrawable mCastingDrawable, mFlyingDrawable, mImpactDrawable;
 
-	private final double BOUNCE_TIMEOUT = 0.5f;
 	private double mBounceTimeout = 0.f;
 	private final double mImpactAnimLen;
 	private double mImpactTimer = 0;
@@ -76,8 +72,6 @@ public class Fireball extends GameObject
 		return mFireballState == FireballState.FLYING;
 	}
 
-	public Wizard getCaster() { return mCasterWizard; }
-
 	protected void recycle()
 	{
 		setActive(false);
@@ -94,12 +88,13 @@ public class Fireball extends GameObject
 
 	public void init(@NonNull Wizard caster, @NonNull Vector2D position)
 	{
-		mCasterWizard = caster;
+		setCaster(caster);
 		setPos(position);
 
-		setTint(mCasterWizard.getTint());
 		setDrawable(mCastingDrawable);
 		resetDimensions();
+
+		mFireballState = FireballState.CASTING;
 
 		setActive(true);
 	}
@@ -108,9 +103,6 @@ public class Fireball extends GameObject
 	{
 		mDirection = direction;
 		mBaseSpeed = speed;
-
-		int preH = getHeight();
-		int preW = getWidth();
 
 		setDrawable(mFlyingDrawable);
 
@@ -175,6 +167,25 @@ public class Fireball extends GameObject
 				bounce(asBoundary.getSurfaceNormal());
 			else
 				this.impact(asBoundary.getSurfaceNormal(), overlapRegion);
+		}
+
+		else if (other instanceof Shield)
+		{
+			Shield asShield = (Shield) other;
+			Vector2D surfaceNormal = asShield.getSurfaceNormal();
+
+			// Find which side the impact is on
+			Vector2D pos = getPos();
+			Vector2D shieldPos = asShield.getPos();
+			Vector2D normalAddedPos = pos.getAdded(surfaceNormal);
+
+			Vector2D withoutDist = pos.getSubtracted(shieldPos);
+			Vector2D withDist = normalAddedPos.getSubtracted(shieldPos);
+
+			if (withoutDist.length() > withDist.length())
+				surfaceNormal.negate();
+
+			impact(surfaceNormal, overlapRegion);
 		}
 	}
 

@@ -1,7 +1,9 @@
 package com.mk.wizardduel;
 
 import android.app.Application;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -21,7 +23,19 @@ public class WizardApplication extends Application
 
 	public static Drawable getDrawableFromResourceId(int rId)
 	{
-		Drawable d = ResourcesCompat.getDrawable(mInstance.getResources(), rId, null);
-		return d;
+		return ResourcesCompat.getDrawable(mInstance.getResources(), rId, null);
+	}
+
+	public static Resources getAppResources()
+	{
+		return mInstance.getResources();
+	}
+
+	public static float dipToPx(float dip)
+	{
+		return TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP,
+				dip,
+				WizardApplication.getAppResources().getDisplayMetrics());
 	}
 }

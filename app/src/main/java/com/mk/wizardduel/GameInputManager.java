@@ -6,7 +6,6 @@ import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 
@@ -18,9 +17,13 @@ import com.mk.wizardduel.utils.Vector2D;
 /** A class which handles all of the game's inputs. Much of this class' implementation
  * has been taken from GestureDetector and adapted to work with multi-touch. */
 public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
-										implements GestureDetector.OnDoubleTapListener,
-													  ScaleGestureDetector.OnScaleGestureListener
+										implements GestureDetector.OnDoubleTapListener
 {
+
+	private static final String TOUCH_DEBUG_TAG = "DEBUG:Touch"; // Logging tag
+	private static final float MAX_SPAN_TO_SHIELD_DIP = 100.f;
+		// initialise here with dp, constructor converts into px and puts it in MAX_SHIELD_SPAN
+
 	// Message type constants akin to those used by GestureDetector,
 	// except using it for Message.arg1 in GameGestureHandler below
 	private static final int SHOW_PRESS = 1;
@@ -43,7 +46,7 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		// > using Message.arg1 for event type
 
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@NonNull Message msg) {
 			switch (msg.arg1) {
 				case SHOW_PRESS:
 					if (!(msg.obj instanceof MotionEvent))
@@ -73,11 +76,12 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 	}
 
 	// Members
-	final private String TOUCH_DEBUG_TAG = "DEBUG:Touch"; // Logging tag
 	private final GameService mGameService;
 	private final ViewConfiguration mViewConfig;
 	private final Handler mHandler;
 	private VelocityTracker mVelocityTracker;
+	private final float MAX_SPAN_TO_SHIELD;
+
 
 	public GameInputManager(GameService gameService, ViewConfiguration viewConfiguration)
 	{
@@ -85,6 +89,8 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		mViewConfig = viewConfiguration;
 		mHandler = new GameGestureHandler();
 			// TODO would be improved by running it in another thread, but alas, I lack the time to implement that
+
+		MAX_SPAN_TO_SHIELD = WizardApplication.dipToPx(MAX_SPAN_TO_SHIELD_DIP);
 	}
 
 	/** Called manually by GameView. Top-level touch event. */
@@ -155,7 +161,7 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 		else
 		{
 			mHandler.removeMessages(pointerId);
-			mGameService.cancelFireball(pointerId);
+			mGameService.cancelSpell(pointerId);
 		}
 	}
 
@@ -165,14 +171,35 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 
 		for (int i = 0; i < numPointers; i++)
 		{
+			Vector2D point1 = new Vector2D(event.getX(i), event.getY(i));
+			int id1 = event.getPointerId(i);
+
 			// Log.i(TOUCH_DEBUG_TAG, "onMove(), id:" + event.getPointerId(i) + " x:" + event.getX(i) + " y:" + event.getY(i));
-			mGameService.moveFireball(event.getPointerId(i), event.getX(i), event.getY(i));
+			mGameService.moveSpell(id1, point1);
+
+			// Check for shield gesture
+			for (int j = i+1; j < numPointers; j++)
+			{
+				Vector2D point2 = new Vector2D(event.getX(j), event.getY(j));
+				int id2 = event.getPointerId(j);
+
+				float span = point1.getSubtracted(point2).length();
+				if (span <= MAX_SPAN_TO_SHIELD)
+				{
+					boolean shieldCast = mGameService.tryCastShield(id1, id2, point1, point2);
+					if (shieldCast)
+					{
+						mHandler.removeMessages(id1);
+						mHandler.removeMessages(id2);
+					}
+				}
+			}
 		}
 	}
 
 	private void onCancel(MotionEvent event)
 	{
-		mGameService.cancelAllFireballs();
+		mGameService.cancelAllSpells();
 	}
 
 
@@ -194,7 +221,7 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 	{
 		Log.i(TOUCH_DEBUG_TAG, "Fling detected for pointer with id == " + pointerId);
 
-		mGameService.releaseFireball(pointerId, velocity.getNormalized());
+		mGameService.releaseSpell(pointerId, velocity.getNormalized());
 		mHandler.removeMessages(pointerId);
 	}
 
@@ -206,28 +233,5 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 	{
 		Log.i(TOUCH_DEBUG_TAG, "onDoubleTap() triggered");
 		return false;
-	}
-
-	@Override
-	public boolean onScaleBegin(@NonNull ScaleGestureDetector detector)
-	{
-		// TODO shield create IF conditions are met
-		Log.i(TOUCH_DEBUG_TAG, "onScaleBegin() triggered");
-		return true;
-	}
-
-	@Override
-	public boolean onScale(@NonNull ScaleGestureDetector detector)
-	{
-		// TODO Shield update IF exists
-		//Log.i(TOUCH_DEBUG_TAG, "onScale() triggered");
-		return false;
-	}
-
-	@Override
-	public void onScaleEnd(@NonNull ScaleGestureDetector detector)
-	{
-		// TODO Destroy shield IF exists
-		Log.i(TOUCH_DEBUG_TAG, "onScaleEnd() triggered");
 	}
 }
