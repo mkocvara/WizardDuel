@@ -62,6 +62,8 @@ public class Wizard extends GameObject
 		setActive(true);
 	}
 
+	public Player getPlayer() { return mPlayer; }
+
 	public void setStatusListener(WizardStatusListener listener) { mStatusListener = listener; }
 
 	@Override

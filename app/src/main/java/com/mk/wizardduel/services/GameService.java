@@ -496,7 +496,16 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		// Test if fireball hasn't left the correct caster's area
 		Wizard caster = fireball.getCaster();
 		Wizard areaOwner = getCastingAreaOwner((int)pos.x);
-		fireball.setActive(caster == areaOwner);
+
+		if (caster != areaOwner)
+		{
+			// Limit x movement to the border.
+			float castingAreaBorderX = (caster.getPlayer() == Player.PLAYER_ONE)
+					? mGameAttributes.castingAreaWidth
+					: mViewBounds.width() - mGameAttributes.castingAreaWidth;
+
+			pos.setX(castingAreaBorderX);
+		}
 
 		fireball.setPos(pos);
 	}

@@ -31,6 +31,16 @@ public class Vector2D extends PointF
 		this.y = v.y;
 	}
 
+	public void setX(float x)
+	{
+		this.x = x;
+	}
+
+	public void setY(float y)
+	{
+		this.y = y;
+	}
+
 	public void setZero()
 	{
 		x = 0;
