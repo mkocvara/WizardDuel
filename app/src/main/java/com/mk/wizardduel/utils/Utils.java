@@ -1,14 +1,24 @@
 package com.mk.wizardduel.utils;
 
-import android.graphics.Bitmap;
-import android.graphics.Matrix;
-
 public class Utils
 {
-	// Source: https://stackoverflow.com/a/36494192/25070270
-	public static Bitmap makeFlippedBitmap(Bitmap source, boolean xFlip, boolean yFlip) {
-		Matrix matrix = new Matrix();
-		matrix.postScale(xFlip ? -1 : 1, yFlip ? -1 : 1, source.getWidth() / 2f, source.getHeight() / 2f);
-		return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+	public static int clamp(int value, int min, int max)
+	{
+		return Math.max(Math.min(value, max), min);
+	}
+
+	public static long clamp(long value, long min, long max)
+	{
+		return Math.max(Math.min(value, max), min);
+	}
+
+	public static float clamp(float value, float min, float max)
+	{
+		return Math.max(Math.min(value, max), min);
+	}
+
+	public static double clamp(double value, double min, double max)
+	{
+		return Math.max(Math.min(value, max), min);
 	}
 }

@@ -1,9 +1,13 @@
 <resources>
     <declare-styleable name="GameView">
-        <!-- Fraction from 0.1 to 0.5 determining the fraction of the view's width that
-            casting areas will take up. It is 0.3 by default-->
+        <!-- Minimum, maximum, and default values can be found in GameAttributes.java -->
+
+        <!-- Fraction from determining the fraction of the view's width that casting areas will take up.-->
         <attr name="castingAreaSize" format="float" />
-        
+
+        <!-- Maximum number of hit points for each Wizard. -->
+        <attr name="hitPoints" format="integer" />
+
         <!-- Fraction of the screen determining top bound of both wizards.
             Takes precedence over individual bounds attributes. -->
         <attr name="wizardsRelativeTop" format="float" />

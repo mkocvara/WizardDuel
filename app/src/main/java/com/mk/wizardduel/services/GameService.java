@@ -12,12 +12,13 @@ import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.mk.wizardduel.Game;
 import com.mk.wizardduel.GameAttributes;
+import com.mk.wizardduel.Player;
+import com.mk.wizardduel.activities.GameActivity;
 import com.mk.wizardduel.gameobjects.Boundary;
 import com.mk.wizardduel.gameobjects.Fireball;
 import com.mk.wizardduel.gameobjects.Shield;
@@ -68,7 +69,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 				return;
 
 			mDeltaTime = deltaTime;
-			// Log.i("DEBUG", "GameThread.frameTick() called; Frame " + ++mDebugFrameCount + "; deltaTime == " + deltaTime);
+				// Game loop reads mDeltaTime and executes accordingly when != 0.
 		}
 
 		public void terminate() { mShouldStop = true; }
@@ -78,6 +79,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	private class ShieldInfo
 	{
 		private final Shield mShield;
+
+		// If I ever add a 4 player mode, these would have to also be made into arrays.
 		private int mPointerId1;
 		private int mPointerId2;
 
@@ -190,6 +193,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		}
 	}
 
+	private GameActivity mActivity;
 	private final GameThread mGameThread = new GameThread();
 	private final IBinder mBinder = new GameBinder();
 	private Runnable mGameTickCallback = null;
@@ -201,7 +205,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	final private Rect mViewBounds = new Rect();
 	private GameAttributes mGameAttributes = null;
 	private GameInputManager mGameInputManager;
-	private Wizard mWizard1, mWizard2;
+	private final Wizard[] mWizards = new Wizard[2];
 	private final HashMap<Wizard, ShieldInfo> mShields = new HashMap<>();
 	private int mFireballHeight = 0;
 
@@ -226,14 +230,13 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 	/** Must be called by activity which is launching this service, passing itself.
 	 * @param boundActivity The activity binding this service to it (and likely calling this method).*/
-	public void bind(AppCompatActivity boundActivity)
+	public void bind(GameActivity boundActivity)
 	{
+		mActivity = boundActivity;
 		mGame = new ViewModelProvider(boundActivity).get(Game.class);
-
-		Log.i("DEBUG", "GameService.init() called; mGame.getNumObjects() == " + mGame.getNumObjects());
 	}
 
-	/** Called from <code>GameView</code> or its activity to supply <code>GameAttributes</code>.
+	/** Called from <code>GameView</code> or its activity, supplying <code>GameAttributes</code>.
 	 * @param gameAttrs <code>GameAttributes</code> object populated with attributes for the game. */
 	public void init(GameAttributes gameAttrs)
 	{
@@ -254,7 +257,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 		// Unpack necessary attributes
 		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
-		mFireballHeight = (int) ((fireballRelativeHeight != GameAttributes.NOT_SET) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizard1.getHeight() * 0.3f));
+		mFireballHeight = (int) ((fireballRelativeHeight != GameAttributes.NOT_SET) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizards[0].getHeight() * 0.3f));
 
 		// Start game thread and choreographer time sync
 		Choreographer.getInstance().postFrameCallback(this);
@@ -303,6 +306,10 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	public void onDestroy()
 	{
 		super.onDestroy();
+
+		mWizards[0].setStatusListener(null);
+		mWizards[1].setStatusListener(null);
+
 		mGameThread.terminate();
 		Log.i("DEBUG", "GameService.onDestroy() called.");
 	}
@@ -325,6 +332,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGameThread.setPaused(true);
 		return false;
 	}
+
+	public GameAttributes getGameAttributes() { return mGameAttributes; }
 
 	private void updateAnimHandler()
 	{
@@ -363,34 +372,40 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	{
 		if (!mGame.hasStarted())
 		{
-			mWizard1 = new Wizard(mGameAttributes);
-			mWizard2 = new Wizard(mGameAttributes);
+			mWizards[0] = new Wizard(mGameAttributes, Player.PLAYER_ONE);
+			mWizards[1] = new Wizard(mGameAttributes, Player.PLAYER_TWO);
 
 			// Set Wizard sizes and positions
 			int scaledHeight1 = (int)(mViewBounds.height() * (mGameAttributes.wizard1RelativeBounds.bottom - mGameAttributes.wizard1RelativeBounds.top));
-			mWizard1.setHeight(scaledHeight1, true);
+			mWizards[0].setHeight(scaledHeight1, true);
 
 			int scaledHeight2 = (int)(mViewBounds.height() * (mGameAttributes.wizard2RelativeBounds.bottom - mGameAttributes.wizard2RelativeBounds.top));
-			mWizard2.setHeight(scaledHeight2, true);
+			mWizards[1].setHeight(scaledHeight2, true);
 
-			mWizard1.setPos((int)(mViewBounds.width() * mGameAttributes.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * mGameAttributes.wizard1RelativeBounds.top));
-			mWizard2.setPos((int)(mViewBounds.width() * mGameAttributes.wizard2RelativeBounds.right), (int)(mViewBounds.height() * mGameAttributes.wizard2RelativeBounds.top));
+			mWizards[0].setPos((int)(mViewBounds.width() * mGameAttributes.wizard1RelativeBounds.left),  (int)(mViewBounds.height() * mGameAttributes.wizard1RelativeBounds.top));
+			mWizards[1].setPos((int)(mViewBounds.width() * mGameAttributes.wizard2RelativeBounds.right), (int)(mViewBounds.height() * mGameAttributes.wizard2RelativeBounds.top));
 
-			mWizard2.setAnchor(1.f, 0.f);
-			mWizard2.rotation = 180.f;
+			mWizards[1].setAnchor(1.f, 0.f);
+			mWizards[1].rotation = 180.f;
 
-			mWizard1.setTint(mGameAttributes.player1Colour);
-			mWizard2.setTint(mGameAttributes.player2Colour);
+			mWizards[0].setTint(mGameAttributes.player1Colour);
+			mWizards[1].setTint(mGameAttributes.player2Colour);
 
-			mGame.addObject(mWizard1);
-			mGame.addObject(mWizard2);
+			mWizards[0].setStatusListener(mActivity);
+			mWizards[1].setStatusListener(mActivity);
 
-			mGame.gameData.registerWizards(mWizard1, mWizard2);
+			mGame.addObject(mWizards[0]);
+			mGame.addObject(mWizards[1]);
+
+			mGame.gameData.registerWizards(mWizards[0], mWizards[1]);
 		}
 		else
 		{
-			mWizard1 = mGame.gameData.getWizard1();
-			mWizard2 = mGame.gameData.getWizard2();
+			mWizards[0] = mGame.gameData.getWizard1();
+			mWizards[1] = mGame.gameData.getWizard2();
+
+			mWizards[0].setStatusListener(mActivity);
+			mWizards[1].setStatusListener(mActivity);
 		}
 	}
 
@@ -398,8 +413,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	{
 		if (!mGame.hasStarted())
 		{
-			Shield shield1 = new Shield(mWizard1);
-			Shield shield2 = new Shield(mWizard2);
+			Shield shield1 = new Shield(mWizards[0]);
+			Shield shield2 = new Shield(mWizards[1]);
 
 			mGame.addObject(shield1);
 			mGame.addObject(shield2);
@@ -407,8 +422,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
 			ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
 
-			mShields.put(mWizard1, shieldInfo1);
-			mShields.put(mWizard2, shieldInfo2);
+			mShields.put(mWizards[0], shieldInfo1);
+			mShields.put(mWizards[1], shieldInfo2);
 
 			mGame.gameData.registerShields(shield1, shield2);
 		}
@@ -420,8 +435,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			ShieldInfo shieldInfo1 = new ShieldInfo(shield1);
 			ShieldInfo shieldInfo2 = new ShieldInfo(shield2);
 
-			mShields.put(mWizard1, shieldInfo1);
-			mShields.put(mWizard2, shieldInfo2);
+			mShields.put(mWizards[0], shieldInfo1);
+			mShields.put(mWizards[1], shieldInfo2);
 		}
 	}
 
@@ -578,9 +593,9 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	{
 		Wizard caster = null;
 		if (x <= mGameAttributes.castingAreaWidth)
-			caster = mWizard1;
+			caster = mWizards[0];
 		else if (x >= mGameAttributes.viewBounds.width() - mGameAttributes.castingAreaWidth)
-			caster = mWizard2;
+			caster = mWizards[1];
 
 		return caster;
 	}

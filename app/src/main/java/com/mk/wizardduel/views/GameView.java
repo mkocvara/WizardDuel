@@ -70,7 +70,8 @@ public class GameView extends View
 			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, NOT_SET);
 			mGameAttributes.fireballSpeedPx = (int) WizardApplication.dipToPx(mGameAttributes.fireballSpeedDp);
 
-			mGameAttributes.castingAreaRelativeWidth = attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.castingAreaRelativeWidth);
+			mGameAttributes.setCastingAreaRelativeWidth(attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.getCastingAreaRelativeWidth()));
+			mGameAttributes.setMaxHitPoints(attributes.getInt(R.styleable.GameView_hitPoints, mGameAttributes.getMaxHitPoints()));
 		}
 		finally
 		{
@@ -158,7 +159,7 @@ public class GameView extends View
 		int bottomBound = mGameAttributes.viewBounds.height();
 		int topBound = 0;
 
-		int rightBound1 = (int)((float)mGameAttributes.viewBounds.width() * mGameAttributes.castingAreaRelativeWidth);
+		int rightBound1 = (int)((float)mGameAttributes.viewBounds.width() * mGameAttributes.getCastingAreaRelativeWidth());
 		float scaleUp = bottomBound / drawableHeight;
 		int newWidth = (int)(drawableWidth * scaleUp);
 		int leftBound1 = rightBound1 - newWidth;

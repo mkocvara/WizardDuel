@@ -3,6 +3,8 @@ package com.mk.wizardduel;
 import com.mk.wizardduel.gameobjects.Shield;
 import com.mk.wizardduel.gameobjects.Wizard;
 
+/** Convenience class for housing important data that needs to persist
+ *  across the game activity's lifecycle. */
 public class GameData
 {
 	private Wizard mWizard1 = null, mWizard2 = null;
