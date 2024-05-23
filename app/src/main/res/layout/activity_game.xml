@@ -12,11 +12,24 @@
         android:layout_height="match_parent"
 
         app:castingAreaSize="0.3334"
-        app:hitPoints="5"
-
         app:wizardsRelativeTop="0.38"
         app:wizardsRelativeBottom="0.62"
         app:wizardsRelativeDistFromEdge="0.01"
+
+        app:hitHatHeight="70dp"
+        app:hitHatWidth="82dp"
+
+        app:hitPoints="3"
+
+        app:maxChargedFireballs="5"
+        app:startingChargedFireballs="3"
+        app:timeToRechargeFireball="2"
+
+        app:maxShieldTime="5"
+        app:shieldRechargeRate="1"
+        app:shieldDepletionBuffer="0.25"
+        app:lengthBasedShieldDepletion="true"
+        app:shieldDepletionMedianSpan="100dp"
         />
 
     <LinearLayout

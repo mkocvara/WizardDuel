@@ -116,8 +116,8 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 				hpImgView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.hit_hat_anim));
 				hpImgView.getDrawable().setTint(tint);
 
-				int height = (int) WizardApplication.dipToPx(gameAttributes.hitHatHeightDip);
-				int width = (int) WizardApplication.dipToPx(gameAttributes.hitHatWidthDip);
+				int height = gameAttributes.hitHatHeight;
+				int width = gameAttributes.hitHatWidth;
 				hpImgView.setLayoutParams(new ViewGroup.LayoutParams(width, height));
 
 				layoutToAddTo.addView(hpImgView);
@@ -128,6 +128,9 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	@Override
 	public void onHitPointLost(Player player, int newHitPoints)
 	{
+		if (mGameService.getGameAttributes().getMaxHitPoints() == 0)
+			return;
+
 		runOnUiThread(() -> {
 			LinearLayout layoutToUpdate = (player == Player.PLAYER_ONE) ? mHPLayoutP1 : mHPLayoutP2;
 			View imageView = layoutToUpdate.getChildAt(newHitPoints);
@@ -141,21 +144,21 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	}
 
 	@Override
-	public void onFireballsAvailableChanged(Player player, int newFireballsAvailable)
+	public void onFireballsChargedChanged(Player player, int newFireballsAvailable)
 	{
 		// TODO
 
 	}
 
 	@Override
-	public void onFireballRecharge(Player player, float progress)
+	public void onFireballRecharge(Player player, int percentProgress)
 	{
 		// TODO
 
 	}
 
 	@Override
-	public void onShieldEnergyLevelChanged(Player player, int newEnergyLevel)
+	public void onShieldTimeChargedChanged(Player player, int newEnergyLevel)
 	{
 		// TODO
 

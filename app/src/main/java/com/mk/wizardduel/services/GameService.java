@@ -125,6 +125,12 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 				Wizard caster = mShield.getCaster();
 
+				if (!caster.tryContinueShield((int) mPoint1.getSubtracted(mPoint2).length()))
+				{
+					deactivate();
+					return;
+				}
+
 				Wizard point1CastingArea = getCastingAreaOwner((int)mPoint1.x);
 				Wizard point2CastingArea = getCastingAreaOwner((int)mPoint2.x);
 
@@ -174,6 +180,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 				return;
 
 			mShield.stopCasting();
+			mShield.getCaster().deactivateShield();
 
 			mPoint1Updated = false;
 			mPoint2Updated = false;
@@ -256,15 +263,14 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		createBoundaries();
 
 		// Unpack necessary attributes
-		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
-		mFireballHeight = (int) ((fireballRelativeHeight != GameAttributes.NOT_SET) ? (mViewBounds.height() * fireballRelativeHeight) : (mWizards[0].getHeight() * 0.3f));
+		mFireballHeight = (int) (mViewBounds.height() * mGameAttributes.fireballRelativeHeight);
 
 		// Start game thread and choreographer time sync
 		Choreographer.getInstance().postFrameCallback(this);
 		mGameThread.start();
 
 		// Start various components
-		mAnimHandler = new AnimHandler(getLifecycle(), true); // TODO anim list doesn't update: fix
+		mAnimHandler = new AnimHandler(getLifecycle(), true);
 		getLifecycle().addObserver(mAnimHandler);
 		mCachedAllAnims = new ArrayList<>(mGame.getAllAnims());
 		handleAnims(mCachedAllAnims);
@@ -471,11 +477,24 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 			return;
 		}
 
+		// Check if in the right casting area and if shield is up currently.
 		Wizard caster = getCastingAreaOwner((int)position.x);
 		ShieldInfo shield = mShields.get(caster);
 		if (caster == null || shield == null || shield.isShieldActive())
 			return;
 
+		// Check if there is enough charged fireballs
+		int numCharged = caster.getNumChargedFireballs();
+		int numUnreleased = 0;
+		for (Fireball f :  mUnreleasedFireballs.values())
+		{
+			if (f.getCaster() == caster)
+				numUnreleased++;
+		}
+		if (numUnreleased == numCharged)
+			return;
+
+		// Finally, cast the fireball!
 		Fireball fireball = Fireball.obtain();
 		fireball.init(caster, position);
 		fireball.setAnchor(0.5f, 0.5f);
@@ -553,16 +572,10 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		if (fireball == null)
 			return;
 
-		// If it's not active, it's not in the correct casting zone.
-		if (!fireball.isActive())
-		{
-			cancelSpell(id);
+		if (!fireball.getCaster().tryReleaseFireball())
 			return;
-		}
 
-		int speed = mGameAttributes.fireballSpeedPx != GameAttributes.NOT_SET
-				? mGameAttributes.fireballSpeedPx
-				: mGameAttributes.fireballSpeedDp; // only a backup, Px should always be set.
+		int speed = mGameAttributes.fireballSpeed;
 
 		fireball.release(direction, speed);
 		mUnreleasedFireballs.remove(id);
@@ -586,6 +599,9 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		if (shield == null || shield.isShieldActive())
 			return false;
 
+		// Ask the Wizard
+		if (!caster.tryActivateShield((int) point1.getSubtracted(point2).length()))
+			return false;
 
 		Log.i("DEBUG:Touch", "SHIELD Cast! points: " + pointerId1 + " and " + pointerId2);
 		ShieldInfo shieldInfo = mShields.get(caster);

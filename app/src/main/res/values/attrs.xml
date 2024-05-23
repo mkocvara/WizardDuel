@@ -5,9 +5,6 @@
         <!-- Fraction from determining the fraction of the view's width that casting areas will take up.-->
         <attr name="castingAreaSize" format="float" />
 
-        <!-- Maximum number of hit points for each Wizard. -->
-        <attr name="hitPoints" format="integer" />
-
         <!-- Fraction of the screen determining top bound of both wizards.
             Takes precedence over individual bounds attributes. -->
         <attr name="wizardsRelativeTop" format="float" />
@@ -34,6 +31,40 @@
         <attr name="wizard2RelativeRight" format="float" />
         <!-- Left is calculated, preserving aspect ratio -->
 
+        <!-- Height of the hat hit point indicators. -->
+        <attr name="hitHatHeight" format="dimension" />
+        <!-- Width of the hat hit point indicators. -->
+        <attr name="hitHatWidth" format="dimension" />
+
+        <!-- Maximum hit points for both Wizards. -->
+        <attr name="hitPoints" format="integer" />
+
+        <!-- Fraction representing the height of fireballs compared to screen height. -->
         <attr name="fireballRelativeHeight" format="float" />
+        <!-- Fireball speed. -->
+        <attr name="fireballSpeed" format="dimension" />
+
+        <!-- Maximum fireballs a player can have ready at any time. -->
+        <attr name="maxChargedFireballs" format="integer" />
+        <!-- Number of fireballs with which both players start. -->
+        <attr name="startingChargedFireballs" format="integer" />
+        <!-- Time in seconds to recharge a single fireball. -->
+        <attr name="timeToRechargeFireball" format="integer" />
+
+        <!-- Maximum shield time given equal length to the Depletion Median Span. -->
+        <attr name="maxShieldTime" format="float" />
+        <!-- By default it is 1 second per 1 real life second. -->
+        <attr name="shieldRechargeRate" format="float" />
+        <!-- Shield will not activate if current time left is under this threshold.
+            This prevents imperceptibly short shield uptimes and nudges players toward
+            using the shield slightly more efficiently -->
+        <attr name="shieldDepletionBuffer" format="float" />
+        <!-- If false, the shield will deplete at the same rate of 1 per 1 second no matter its length.
+	        If true, the shield's depletion will be multiplied by the ratio of its length over mDepletionMedianSpan. -->
+        <attr name="lengthBasedShieldDepletion" format="boolean" />
+        <!-- The length of shield at which the shield depletes at a rate of 1 per 1 second.
+            Shorter and longer lengths change depletion linearly.
+            Only applies if lengthBasedShieldDepletion is true. -->
+        <attr name="shieldDepletionMedianSpan" format="dimension" />
     </declare-styleable>
 </resources>

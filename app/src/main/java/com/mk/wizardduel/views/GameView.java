@@ -47,43 +47,54 @@ public class GameView extends View
 		super(context, attrs, defStyleAttr, defStyleRes);
 
 		// Extract attributes
-		final TypedArray attributes = context.obtainStyledAttributes(
-				attrs, R.styleable.GameView, defStyleAttr, defStyleRes);
+		final TypedArray attributes = context.obtainStyledAttributes(attrs, R.styleable.GameView, defStyleAttr, defStyleRes);
 
 		final float NOT_SET = GameAttributes.NOT_SET;
 		float wBothTop, wBothBottom, wBothEdge, w1Top, w1Bottom, w1Left, w2Top, w2Bottom, w2Right;
-		w1Top = w1Bottom = w1Left = w2Top = w2Bottom = w2Right = NOT_SET;
 
 		try
 		{
+			// Casting area
+			mGameAttributes.setCastingAreaRelativeWidth(attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.getCastingAreaRelativeWidth()));
+
+			// Wizard bounds
 			wBothTop = attributes.getFloat(R.styleable.GameView_wizardsRelativeTop, NOT_SET);
 			wBothBottom = attributes.getFloat(R.styleable.GameView_wizardsRelativeBottom, NOT_SET);
 			wBothEdge = attributes.getFloat(R.styleable.GameView_wizardsRelativeDistFromEdge, NOT_SET);
 
-			w1Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeTop, NOT_SET) : wBothTop;
-			w2Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeTop, NOT_SET) : wBothTop;
-			w1Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeBottom, NOT_SET) : wBothBottom;
-			w2Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeBottom, NOT_SET) : wBothBottom;
-			w1Left =  (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, NOT_SET)  : wBothEdge;
-			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, NOT_SET) : 1-wBothEdge;
+			w1Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeTop, mGameAttributes.wizard1RelativeBounds.top) : wBothTop;
+			w2Top = (wBothTop == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeTop, mGameAttributes.wizard2RelativeBounds.top) : wBothTop;
+			w1Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeBottom, mGameAttributes.wizard1RelativeBounds.bottom) : wBothBottom;
+			w2Bottom = (wBothBottom == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeBottom, mGameAttributes.wizard2RelativeBounds.bottom) : wBothBottom;
+			w1Left =  (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard1RelativeLeft, mGameAttributes.wizard1RelativeBounds.left)  : wBothEdge;
+			w2Right = (wBothEdge == NOT_SET) ? attributes.getFloat(R.styleable.GameView_wizard2RelativeRight, mGameAttributes.wizard1RelativeBounds.right) : 1-wBothEdge;
 
-			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, NOT_SET);
-			mGameAttributes.fireballSpeedPx = (int) WizardApplication.dipToPx(mGameAttributes.fireballSpeedDp);
+			// Hit Hat dimensions
+			mGameAttributes.hitHatHeight = attributes.getDimensionPixelSize(R.styleable.GameView_hitHatHeight,
+					(int)WizardApplication.dipToPx((float)mGameAttributes.hitHatHeight));
+			mGameAttributes.hitHatWidth = attributes.getDimensionPixelSize(R.styleable.GameView_hitHatWidth,
+					(int)WizardApplication.dipToPx((float)mGameAttributes.hitHatWidth));
 
-			mGameAttributes.setCastingAreaRelativeWidth(attributes.getFloat(R.styleable.GameView_castingAreaSize, mGameAttributes.getCastingAreaRelativeWidth()));
+			// Hit points
 			mGameAttributes.setMaxHitPoints(attributes.getInt(R.styleable.GameView_hitPoints, mGameAttributes.getMaxHitPoints()));
+
+			// Fireball parameters
+			mGameAttributes.fireballRelativeHeight = attributes.getFloat(R.styleable.GameView_fireballRelativeHeight, mGameAttributes.fireballRelativeHeight);
+			mGameAttributes.fireballSpeed = attributes.getDimensionPixelOffset(R.styleable.GameView_fireballSpeed, (int)WizardApplication.dipToPx(mGameAttributes.fireballSpeed));
+			mGameAttributes.setMaxChargedFireballs(attributes.getInt(R.styleable.GameView_maxChargedFireballs, mGameAttributes.getMaxChargedFireballs()));
+			mGameAttributes.setStartingChargedFireballs(attributes.getInt(R.styleable.GameView_startingChargedFireballs, mGameAttributes.getStartingChargedFireballs()));
+			mGameAttributes.setTimeToRechargeFireball(attributes.getFloat(R.styleable.GameView_timeToRechargeFireball, (float)mGameAttributes.getTimeToRechargeFireball()));
+
+			// Shield parameters
+			mGameAttributes.setMaxShieldTime(attributes.getFloat(R.styleable.GameView_maxShieldTime, (float)mGameAttributes.getMaxShieldTime()));
+			mGameAttributes.setShieldRechargeRate(attributes.getFloat(R.styleable.GameView_shieldRechargeRate, (float)mGameAttributes.getShieldRechargeRate()));
+			mGameAttributes.setShieldDepletionBuffer(attributes.getFloat(R.styleable.GameView_shieldDepletionBuffer, (float)mGameAttributes.getShieldDepletionBuffer()));
+			mGameAttributes.lengthBasedShieldDepletion = attributes.getBoolean(R.styleable.GameView_lengthBasedShieldDepletion, mGameAttributes.lengthBasedShieldDepletion);
+			mGameAttributes.setShieldDepletionMedianSpan(attributes.getDimensionPixelOffset(R.styleable.GameView_shieldDepletionMedianSpan, mGameAttributes.getShieldDepletionMedianSpan()));
 		}
 		finally
 		{
 			attributes.recycle();
-
-			String assertErrorMessage = "GameView: View is missing one or more Wizard bounds attributes.";
-			assert(w1Top != NOT_SET) : assertErrorMessage;
-			assert(w2Top != NOT_SET) : assertErrorMessage;
-			assert(w1Bottom != NOT_SET) : assertErrorMessage;
-			assert(w2Bottom != NOT_SET) : assertErrorMessage;
-			assert(w1Left != NOT_SET) : assertErrorMessage;
-			assert(w2Right != NOT_SET) : assertErrorMessage;
 		}
 
 		mGameAttributes.wizard1RelativeBounds = new RectF(w1Left, w1Top, 0.f, w1Bottom);

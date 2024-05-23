@@ -20,9 +20,9 @@ public class Wizard extends GameObject
 	public interface WizardStatusListener
 	{
 		void onHitPointLost(Player player, int newHitPoints);
-		void onFireballsAvailableChanged(Player player, int newFireballsAvailable);
-		void onFireballRecharge(Player player, float progress);
-		void onShieldEnergyLevelChanged(Player player, int newEnergyLevel);
+		void onFireballsChargedChanged(Player player, int newFireballsAvailable);
+		void onFireballRecharge(Player player, int percentProgress);
+		void onShieldTimeChargedChanged(Player player, int newEnergyLevel);
 	}
 
 	private static final @DrawableRes int[] drawablePool = {
@@ -36,12 +36,39 @@ public class Wizard extends GameObject
 	private final Player mPlayer;
 	private int mCurrentHitPoints;
 
+	private final int mMaxChargedFireballs;
+	private int mChargedFireballs;
+	private final double mTimeToRechargeFireball;
+	private double mFireballRechargeTimer = 0.0;
+	private int mFireballRechargePercent = 0;
+
+	private final double mMaxShieldTime;
+	private final boolean mUseLengthBasedShieldDepletion;
+	private final int mShieldDepletionMedianSpan;
+	private final double mShieldRechargeRate;
+	private final double mShieldDepletionBuffer;
+	private double mCurrentShieldTimeLeft;
+	private int mShieldChargePercent = 100;
+	private boolean mShieldActive = false;
+	private int mCurrentShieldSpan = 0;
+
 	/** Callback which will be passed the new number of hit points. */
 	private WizardStatusListener mStatusListener;
 
 	public Wizard(@NonNull GameAttributes gameAttributes, Player player)
 	{
 		mCurrentHitPoints = gameAttributes.getMaxHitPoints();
+		mMaxChargedFireballs = gameAttributes.getMaxChargedFireballs();
+		mChargedFireballs = gameAttributes.getStartingChargedFireballs();
+		mTimeToRechargeFireball = gameAttributes.getTimeToRechargeFireball();
+
+		mMaxShieldTime = gameAttributes.getMaxShieldTime();
+		mShieldRechargeRate = gameAttributes.getShieldRechargeRate();
+		mShieldDepletionBuffer = gameAttributes.getShieldDepletionBuffer();
+		mUseLengthBasedShieldDepletion = gameAttributes.lengthBasedShieldDepletion;
+		mShieldDepletionMedianSpan = gameAttributes.getShieldDepletionMedianSpan();
+		mCurrentShieldTimeLeft = mMaxShieldTime;
+
 		mPlayer = player;
 
 		int randDrawableIndex = Random.Default.nextInt(drawablePool.length);
@@ -64,13 +91,55 @@ public class Wizard extends GameObject
 
 	public Player getPlayer() { return mPlayer; }
 
+	public int getNumChargedFireballs() { return mChargedFireballs; }
+
 	public void setStatusListener(WizardStatusListener listener) { mStatusListener = listener; }
 
 	@Override
 	public void update(double deltaTime)
 	{
 		super.update(deltaTime);
-		// Do nothing, Wizards simply stay in their spots and focus on casting spells.
+
+		// FIREBALLS
+		if (mChargedFireballs != mMaxChargedFireballs)
+		{
+			mFireballRechargeTimer += deltaTime;
+			int newPercent = (int) ((mFireballRechargeTimer / mTimeToRechargeFireball) * 100);
+			if (newPercent != mFireballRechargePercent)
+			{
+				mFireballRechargePercent = newPercent;
+				mStatusListener.onFireballRecharge(mPlayer, mFireballRechargePercent);
+
+				if (mFireballRechargePercent >= 100)
+				{
+					mChargedFireballs += 1;
+					mStatusListener.onFireballsChargedChanged(mPlayer, mChargedFireballs);
+					mFireballRechargeTimer = 0.0;
+				}
+			}
+		}
+
+		// SHIELD
+		if (mShieldActive)
+		{
+			double depletion = deltaTime;
+
+			if (mUseLengthBasedShieldDepletion)
+				depletion *= (double)mCurrentShieldSpan / (double)mShieldDepletionMedianSpan;
+
+			mCurrentShieldTimeLeft = Math.max(0, mCurrentShieldTimeLeft - depletion);
+		}
+		else if (mCurrentShieldTimeLeft < mMaxShieldTime)
+		{
+			mCurrentShieldTimeLeft += deltaTime * mShieldRechargeRate;
+		}
+
+		int newPercent = (int) ((mCurrentShieldTimeLeft / mMaxShieldTime) * 100);
+		if (newPercent != mShieldChargePercent)
+		{
+			mShieldChargePercent = newPercent;
+			mStatusListener.onShieldTimeChargedChanged(mPlayer, mShieldChargePercent);
+		}
 	}
 
 	@Override
@@ -83,6 +152,38 @@ public class Wizard extends GameObject
 				registerHit();
 		}
 	}
+
+	public boolean tryReleaseFireball()
+	{
+		if (mChargedFireballs == 0)
+			return false;
+
+		mChargedFireballs--;
+		mStatusListener.onFireballsChargedChanged(mPlayer, mChargedFireballs);
+
+		return true;
+	}
+
+	public boolean tryActivateShield(int span)
+	{
+		if (mCurrentShieldTimeLeft <= mShieldDepletionBuffer)
+			return false;
+
+		mShieldActive = true;
+		mCurrentShieldSpan = span;
+		return true;
+	}
+
+	public boolean tryContinueShield(int span)
+	{
+		if (mCurrentShieldTimeLeft <= 0)
+			return false;
+
+		mCurrentShieldSpan = span;
+		return true;
+	}
+
+	public void deactivateShield() { mShieldActive = false; }
 
 	private void registerHit()
 	{
