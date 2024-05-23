@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.mk.wizardduel.Game;
 import com.mk.wizardduel.GameAttributes;
+import com.mk.wizardduel.gameobjects.Boundary;
 import com.mk.wizardduel.gameobjects.Fireball;
 import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.utils.AnimHandler;
@@ -127,13 +128,16 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 		mGameAttributes = gameAttrs;
 
-		// Set View Bounds -- must happen at the top
+		// Set View Bounds
 		mViewBounds.set(mGameAttributes.viewBounds);
 
-		// Only create wizards the first time this service is started to avoid duplicating them
-		// every time activity is recreated.
+		// Only create wizards & boundaries the first time this service is started
+		// to avoid duplicating them every time the activity is recreated.
 		if (!mGame.hasStarted())
+		{
 			createWizards();
+			createBoundaries();
+		}
 
 		// Unpack necessary attributes
 		float fireballRelativeHeight = mGameAttributes.fireballRelativeHeight;
@@ -265,6 +269,29 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 		mGame.addObject(mWizard1);
 		mGame.addObject(mWizard2);
+	}
+
+	private void createBoundaries()
+	{
+		Rect leftBoundary = new Rect(-1, -1, 0, mViewBounds.bottom + 1);
+		Rect topBoundary = new Rect(-1, -1, mViewBounds.right + 1, 0);
+		Rect rightBoundary = new Rect(mViewBounds.right, -1, mViewBounds.right + 1, mViewBounds.bottom + 1);
+		Rect bottomBoundary = new Rect(-1, mViewBounds.bottom, mViewBounds.right + 1, mViewBounds.bottom + 1);
+
+		Vector2D faceLeft = new Vector2D(1, 0);
+		Vector2D faceTop = new Vector2D(0, 1);
+		Vector2D faceRight = new Vector2D(-1, 0);
+		Vector2D faceBottom = new Vector2D(0, -1);
+
+		Boundary left = new Boundary(leftBoundary, faceLeft, false);
+		Boundary top = new Boundary(topBoundary, faceTop, true);
+		Boundary right = new Boundary(rightBoundary, faceRight, false);
+		Boundary bottom = new Boundary(bottomBoundary, faceBottom, true);
+
+		mGame.addObject(left);
+		mGame.addObject(top);
+		mGame.addObject(right);
+		mGame.addObject(bottom);
 	}
 
 	public void castFireball(Vector2D position, int id)

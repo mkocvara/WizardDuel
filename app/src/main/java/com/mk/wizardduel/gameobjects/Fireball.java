@@ -1,8 +1,6 @@
 package com.mk.wizardduel.gameobjects;
 
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pools;
@@ -31,6 +29,9 @@ public class Fireball extends GameObject
 	private boolean mInPool = false;
 	private boolean mSentFlying = false;
 	private final Drawable mCastingDrawable, mFlyingDrawable;
+
+	private final double BOUNCE_TIMEOUT = 0.5f;
+	private double mBounceTimeout = 0.f;
 
 
 	public Fireball()
@@ -88,10 +89,7 @@ public class Fireball extends GameObject
 		int newWidth = (int) ((float)mFlyingDrawable.getIntrinsicWidth() * widthScale);
 		setWidth(newWidth, false);
 
-		// Set rotation: 0 rotation is the direction [-1,0] (tail on the right)
-		Vector2D noRotDir = new Vector2D(-1f, 0f);
-		double angle = direction.getAngle() + noRotDir.getAngle();
-		rotation = (int)Math.toDegrees(angle);
+		updateRotFromDir();
 
 		mSentFlying = true;
 	}
@@ -100,6 +98,9 @@ public class Fireball extends GameObject
 	public void update(double deltaTime)
 	{
 		super.update(deltaTime);
+
+		if (mBounceTimeout > 0)
+			mBounceTimeout -= deltaTime;
 
 		if (mSentFlying)
 		{
@@ -113,6 +114,10 @@ public class Fireball extends GameObject
 	{
 		//Log.i("DEBUG:Collisions", "Collision detected between a fireball and " + other);
 
+		// Only apply collision logic if the fireball has been released.
+		if (!mSentFlying)
+			return;
+
 		if (other instanceof Fireball)
 		{
 			this.destroy();
@@ -124,8 +129,35 @@ public class Fireball extends GameObject
 			if (asWizard != getCaster())
 				this.destroy();
 		}
+
+		else if (other instanceof Boundary)
+		{
+			Boundary asBoundary = (Boundary) other;
+			if (asBoundary.isReflective())
+				bounce(asBoundary.getSurfaceNormal());
+			else
+				this.destroy();
+		}
 	}
 
-	// expose setActive() as public
+	// Expose setActive() as public:
 	@Override public void setActive(boolean active) { super.setActive(active); }
+
+	private void updateRotFromDir()
+	{
+		// Set rotation: 0 rotation is the direction [-1,0] (tail on the right)
+		Vector2D noRotDir = new Vector2D(-1f, 0f);
+		double angle = mDirection.getAngle() + noRotDir.getAngle();
+		rotation = (int) Math.toDegrees(angle);
+	}
+
+	private void bounce(Vector2D normal)
+	{
+		if (mBounceTimeout > 0)
+			return;
+
+		mDirection.subtract(normal.getMultiplied(2 * mDirection.dot(normal))); // Mirror reflection
+		updateRotFromDir();
+		mBounceTimeout = BOUNCE_TIMEOUT;
+	}
 }
