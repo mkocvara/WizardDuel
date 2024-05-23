@@ -16,6 +16,8 @@ import com.mk.wizardduel.utils.Vector2D;
 
 public abstract class GameObject
 {
+	public static final boolean DEBUG_DRAW_COLLISION_REGIONS = true;
+
 	public enum State
 	{
 		ACTIVE,
@@ -34,7 +36,7 @@ public abstract class GameObject
 	private Drawable mDrawable;
 	private @ColorInt int mTint = 0xFFFFFFFF;
 
-	private Matrix mCachedTransform = null;
+	private Matrix mCachedTransform = null, mCachedTransformRotated = null;
 	private RectF mCachedWorldBounds = null;
 	private Region mCachedCollisionRegion = null;
 	private int mHeight = -1, mWidth = -1;
@@ -83,10 +85,11 @@ public abstract class GameObject
 		viewBounds.right = getWidth();
 		viewBounds.bottom = getHeight();
 
-		Matrix transform = getTransform();
+		Matrix transform = getTransform(true);
 		transform.mapRect(viewBounds);
 
 		mCachedWorldBounds = viewBounds;
+
 		return new RectF(viewBounds);
 	}
 
@@ -115,7 +118,8 @@ public abstract class GameObject
 				w, 	h,		// right, 	bottom
 				0.f, 	h 		// left, 	bottom
 		};
-		Matrix transform = getTransform();
+
+		Matrix transform = getTransform(true);
 		transform.mapPoints(corners);
 
 		Path path = new Path();
@@ -126,9 +130,9 @@ public abstract class GameObject
 		path.lineTo(corners[0], corners[1]);
 
 		RectF bounds = getWorldBounds();
-		bounds.left -= mCollisionInset.x;
+		bounds.left += mCollisionInset.x;
 		bounds.right -= mCollisionInset.x;
-		bounds.top -= mCollisionInset.y;
+		bounds.top += mCollisionInset.y;
 		bounds.bottom -= mCollisionInset.y;
 
 		Rect clipRect = new Rect(
@@ -242,6 +246,7 @@ public abstract class GameObject
 		mCachedWorldBounds = null;
 		mCachedCollisionRegion = null;
 		mCachedTransform = null;
+		mCachedTransformRotated = null;
 	}
 
 	/**
@@ -264,14 +269,26 @@ public abstract class GameObject
 		canvas.rotate(rotation, drawBounds.exactCenterX(), drawBounds.exactCenterY());
 		mDrawable.draw(canvas);
 		canvas.restore();
+
+		if (DEBUG_DRAW_COLLISION_REGIONS)
+		{
+			canvas.save();
+			canvas.clipPath(getCollisionRegion().getBoundaryPath());
+			canvas.drawARGB(50, 0, 255, 0);
+			canvas.restore();
+		}
 	}
 
 	public abstract void handleCollision(GameObject other, Region overlapRegion);
 
-	protected Matrix getTransform()
+	protected Matrix getTransform() { return getTransform(false); }
+	protected Matrix getTransform(boolean withRotation)
 	{
-		if (mCachedTransform != null)
+		if (!withRotation && mCachedTransform != null)
 			return new Matrix(mCachedTransform);
+
+		else if (withRotation && mCachedTransformRotated != null)
+			return new Matrix(mCachedTransformRotated);
 
 		Matrix transform = new Matrix();
 
@@ -280,11 +297,23 @@ public abstract class GameObject
 		float anchorOffsetY = -(mAnchor.y * getHeight());
 
 		// Perform transformations
-		transform.setTranslate(anchorOffsetX, anchorOffsetY);
+		if (withRotation)
+		{
+			transform.setRotate(rotation, getWidth() / 2f, getHeight() / 2f); // must be around centre, just like in draw()
+			transform.postTranslate(anchorOffsetX, anchorOffsetY);
+		}
+		else
+		{
+			transform.setTranslate(anchorOffsetX, anchorOffsetY);
+		}
 		transform.postScale(mScale.x, mScale.y);
 		transform.postTranslate(mPos.x, mPos.y);
 
-		mCachedTransform = transform;
+		if (withRotation)
+			mCachedTransformRotated = transform;
+		else
+			mCachedTransform = transform;
+
 		return new Matrix(transform);
 	}
 }

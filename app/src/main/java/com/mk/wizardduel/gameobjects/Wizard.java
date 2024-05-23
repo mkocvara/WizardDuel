@@ -36,7 +36,7 @@ public class Wizard extends GameObject
 			return;
 		}
 
-		setCollisionInset(new Vector2D(35f, 50f));
+		setCollisionInset(new Vector2D(15f, 15f));
 		init(wizardDrawable);
 	}
 
@@ -53,12 +53,6 @@ public class Wizard extends GameObject
 	private void init(Drawable drawable)
 	{
 		setDrawable(drawable);
-
-		int h = drawable.getIntrinsicHeight();
-		int w = drawable.getIntrinsicWidth();
-
-		setHeight(h);
-		setWidth(w);
 
 		setCollideable(true);
 		setActive(true);

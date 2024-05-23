@@ -64,14 +64,14 @@ public class Fireball extends GameObject
 			totalDurationMs += mImpactDrawable.getDuration(i);
 		mImpactAnimLen = totalDurationMs / 1000.f;
 
-		setCollisionInset(new Vector2D(25f, 25f));
+		setCollisionInset(new Vector2D(3f, 3f));
 		setActive(false);
 	}
 
 	@Override
 	public boolean isCollideable()
 	{
-		// Bypasses the GameObject mCollidable property.
+		// Bypasses the GameObject mCollideable property.
 		// Safer and easier than changing that property on every state change.
 		return mFireballState == FireballState.FLYING;
 	}
