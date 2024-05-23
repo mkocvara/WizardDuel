@@ -18,7 +18,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import com.mk.wizardduel.GameAttributes;
 import com.mk.wizardduel.Player;
-import com.mk.wizardduel.WizardApplication;
 import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.services.GameService;
 import com.mk.wizardduel.R;
@@ -31,6 +30,8 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	private GameService mGameService = null;
 	private GameView mGameView;
 	private boolean isGameServiceBound() { return mGameService != null; }
+
+	/** @noinspection FieldCanBeLocal*/
 	private AnimHandler mAnimHandler;
 
 	private LinearLayout mHPLayoutP1, mHPLayoutP2;
@@ -99,6 +100,11 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 
 	private void setUpUI()
 	{
+		// This function is called on bind (as it needs GameService) but binding happens onStart -- check if
+		// it's already been set up and don't do it again, so that there's just the right amount of Hit Hats.
+		if (mHPLayoutP1.getChildCount() > 0 || mHPLayoutP2.getChildCount() > 0)
+			return;
+
 		GameAttributes gameAttributes = mGameService.getGameAttributes();
 		int maxHP = gameAttributes.getMaxHitPoints();
 		@ColorInt int p1Colour = gameAttributes.player1Colour;
@@ -136,7 +142,7 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 			View imageView = layoutToUpdate.getChildAt(newHitPoints);
 			imageView.setEnabled(false);
 			imageView.setVisibility(View.GONE);
-			layoutToUpdate.postInvalidate();
+			layoutToUpdate.postInvalidateOnAnimation();
 
 			if (newHitPoints == 0 && mGameService.getGameAttributes().getMaxHitPoints() != 0)
 				gameOver();
@@ -147,21 +153,21 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	public void onFireballsChargedChanged(Player player, int newFireballsAvailable)
 	{
 		// TODO
-
+		//Log.i("DEBUG", "Fireballs Charged Changed for player " + (Player.getInt(player) + 1) + "; now available: " + newFireballsAvailable);
 	}
 
 	@Override
 	public void onFireballRecharge(Player player, int percentProgress)
 	{
 		// TODO
-
+		//Log.i("DEBUG", "Fireball Recharge Changed for player " + (Player.getInt(player) + 1) + "; now at: " + percentProgress + "%");
 	}
 
 	@Override
 	public void onShieldTimeChargedChanged(Player player, int newEnergyLevel)
 	{
 		// TODO
-
+		Log.i("DEBUG", "New Shield Energy Level for player " + (Player.getInt(player) + 1) + "; now at: " + newEnergyLevel);
 	}
 
 	private void gameOver()

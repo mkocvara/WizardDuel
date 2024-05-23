@@ -120,9 +120,6 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 			if (mPoint1Updated && mPoint2Updated)
 			{
-				// TODO noting an issue here where sometimes it thinks the a shield's point is in neutral zone when it's not.
-				// First going to do interping to casting area border, then investigate this.
-
 				Wizard caster = mShield.getCaster();
 
 				if (!caster.tryContinueShield((int) mPoint1.getSubtracted(mPoint2).length()))
@@ -140,7 +137,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 					// If both are out, just stop the spell.
 					if (point1CastingArea != caster && point2CastingArea != caster)
 					{
-						mShield.stopCasting(); // TODO find bug which makes the shield not show ever again
+						mShield.stopCasting();
 					}
 					else
 					{
@@ -506,7 +503,7 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 	public void moveSpell(int id, Vector2D pos)
 	{
-		for (ShieldInfo si : mShields.values()	)
+		for (ShieldInfo si : mShields.values())
 			si.updatePoint(id, pos);
 
 		Fireball fireball = mUnreleasedFireballs.get(id);

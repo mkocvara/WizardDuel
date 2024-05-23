@@ -16,7 +16,7 @@ import com.mk.wizardduel.utils.Vector2D;
 
 public abstract class GameObject
 {
-	public static final boolean DEBUG_DRAW_COLLISION_REGIONS = true;
+	public static final boolean DEBUG_DRAW_COLLISION_REGIONS = false;
 
 	public enum State
 	{
