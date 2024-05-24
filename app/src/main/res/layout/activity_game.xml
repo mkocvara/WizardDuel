@@ -87,4 +87,25 @@
         android:scaleX="-1">
     </com.mk.wizardduel.views.HUD>
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/game_fragment_pause"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.mk.wizardduel.PauseGameFragment"/>
+
+    <Button
+        android:id="@+id/game_btn_pause"
+        android:layout_height="@dimen/pause_btn_side"
+        android:layout_width="@dimen/pause_btn_side"
+        android:layout_marginBottom="@dimen/_7sdp"
+        android:adjustViewBounds="true"
+
+        android:background="@drawable/pause_button"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

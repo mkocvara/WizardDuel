@@ -46,4 +46,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion")
     implementation("com.intuit.sdp:sdp-android:1.1.1") // SOURCE: https://github.com/intuit/sdp
+    implementation("androidx.fragment:fragment:1.7.1")
 }

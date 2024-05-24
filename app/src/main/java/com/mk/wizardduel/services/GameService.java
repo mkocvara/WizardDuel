@@ -37,12 +37,11 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		public GameService getService() { return GameService.this; }
 	}
 
-	public class GameThread extends Thread
+	private class GameThread extends Thread
 	{
 		private double mDeltaTime = 0;
 		private boolean mShouldStop = false;
 		private boolean mPaused = false;
-		//private long mDebugFrameCount = 0;
 
 		public GameThread()
 		{
@@ -223,6 +222,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 
 	public GameInputManager getGameInputHandler() { return mGameInputManager; }
 
+	public AnimHandler getAnimHandler() { return mAnimHandler; }
+
 	public void setGameTickCallback(Runnable mGameTickCallback)
 	{
 		this.mGameTickCallback = mGameTickCallback;
@@ -337,6 +338,8 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 	}
 
 	public GameAttributes getGameAttributes() { return mGameAttributes; }
+	public boolean isGamePaused() { return mGameThread.mPaused; }
+	public boolean hasGameStarted() { return mGame.hasStarted(); }
 
 	private void updateAnimHandler()
 	{
@@ -464,6 +467,16 @@ public class GameService extends LifecycleService implements Choreographer.Frame
 		mGame.addObject(top);
 		mGame.addObject(right);
 		mGame.addObject(bottom);
+	}
+
+	public void resumeGame()
+	{
+		mGameThread.setPaused(false);
+	}
+
+	public void pauseGame()
+	{
+		mGameThread.setPaused(true);
 	}
 
 	public void castFireball(Vector2D position, int id)

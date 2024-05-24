@@ -10,18 +10,20 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.ColorInt;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.mk.wizardduel.GameAttributes;
+import com.mk.wizardduel.PauseGameFragment;
 import com.mk.wizardduel.Player;
 import com.mk.wizardduel.gameobjects.Wizard;
 import com.mk.wizardduel.services.GameService;
 import com.mk.wizardduel.R;
-import com.mk.wizardduel.utils.AnimHandler;
 import com.mk.wizardduel.views.GameView;
 import com.mk.wizardduel.views.HUD;
 
@@ -32,12 +34,14 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	private GameView mGameView;
 	private boolean isGameServiceBound() { return mGameService != null; }
 
-	/** @noinspection FieldCanBeLocal*/
-	private AnimHandler mAnimHandler;
+//	private AnimHandler mAnimHandler;
+		// Uncomment in case you change your mind about UI not animating.
 
 	private LinearLayout mHPLayoutP1, mHPLayoutP2;
-
+	private Button mPauseButton;
 	private final HUD[] mHud = new HUD[2];
+
+	private PauseGameFragment mPauseGameFragment;
 
 	/** Defines callbacks for service binding, passed to bindService() when binding GameService
 	 * and to unbindService() when unbinding it. */
@@ -52,6 +56,9 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 			mGameService.setGameTickCallback(GameActivity.this::gameTick);
 			mGameView.init(mGameService);
 			setUpUI();
+
+			if (mGameService.hasGameStarted())
+				pauseGame();
 		}
 
 		@Override
@@ -74,8 +81,30 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 		mHud[0] = findViewById(R.id.game_hud_left);
 		mHud[1] = findViewById(R.id.game_hud_right);
 
-		mAnimHandler = new AnimHandler(getLifecycle(), true);
-		getLifecycle().addObserver(mAnimHandler);
+//		mAnimHandler = new AnimHandler(getLifecycle(), true);
+//		getLifecycle().addObserver(mAnimHandler);
+
+		mPauseButton = findViewById(R.id.game_btn_pause);
+		mPauseButton.setOnClickListener((v) -> pauseGame());
+
+		mPauseGameFragment = (PauseGameFragment) getSupportFragmentManager().findFragmentById(R.id.game_fragment_pause);
+		hidePauseMenu();
+
+		Runnable onMainMenuButtonClicked = this::finish;
+		Runnable onResumeButtonClicked = this::resumeGame;
+
+		mPauseGameFragment.setMainMenuButtonCallback(onMainMenuButtonClicked);
+		mPauseGameFragment.setResumeButtonClicked(onResumeButtonClicked);
+
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				if (mGameService.isGamePaused())
+					resumeGame();
+				else
+					pauseGame();
+			}
+		});
 	}
 
 	@Override
@@ -89,8 +118,13 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	protected void onStop()
 	{
 		super.onStop();
-
 		unbindService(connection);
+	}
+
+	protected void onPause()
+	{
+		super.onPause();
+		pauseGame();
 	}
 
 	private void bindGameService()
@@ -187,5 +221,46 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 
 		// TEMPORARY; TODO replace with proper Game Over screen later
 		new Handler().postDelayed(this::finish, 3000);
+	}
+
+	private void hidePauseMenu()
+	{
+		getSupportFragmentManager()
+				.beginTransaction()
+				.hide(mPauseGameFragment)
+				.commit();
+	}
+
+	private void pauseGame()
+	{
+		if (mGameService.isGamePaused())
+			return;
+
+		mGameService.pauseGame();
+		mPauseButton.setVisibility(View.INVISIBLE);
+		mGameService.getAnimHandler().stop();
+		getSupportFragmentManager()
+				.beginTransaction()
+				.show(mPauseGameFragment)
+				.commit();
+	}
+
+	private void resumeGame()
+	{
+		if (!mGameService.isGamePaused())
+			return;
+
+		mGameService.getAnimHandler().start();
+		hidePauseMenu();
+		mPauseButton.setVisibility(View.VISIBLE);
+		mGameService.resumeGame();
+	}
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus)
+	{
+		super.onWindowFocusChanged(hasFocus);
+		if (!hasFocus)
+			pauseGame();
 	}
 }

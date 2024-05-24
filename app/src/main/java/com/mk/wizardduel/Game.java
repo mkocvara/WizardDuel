@@ -46,7 +46,9 @@ public class Game extends ViewModel
 
 	public void update( double deltaTime )
 	{
-		//Log.i("DEBUG", "Game.update() called.");
+		if (deltaTime <= 0)
+			return;
+
 		mStarted = true;
 
 		Iterator<GameObject> it = mGameObjects.iterator();

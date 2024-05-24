@@ -101,7 +101,6 @@
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/_5sdp"
         android:layout_marginTop="@dimen/_5sdp"
-        android:text="5"
         android:gravity="center|bottom"
         app:autoSizeTextType="uniform"
         app:autoSizeMinTextSize="12sp"
@@ -110,8 +109,7 @@
         app:layout_constraintEnd_toStartOf="@+id/hud_guide_fireball"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/hud_img_shield_bar"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 
         <ImageView

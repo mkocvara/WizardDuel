@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PauseGameFragment">
+
+    <ImageView
+        android:id="@+id/pause_img_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_shadow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/pause_img_paper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:padding="@dimen/_5sdp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/fragment"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+    </ImageView>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_title_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.15"/>
+
+    <ImageView
+        android:id="@+id/pause_img_header"
+        style="@style/UI"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_60sdp"
+        android:layout_marginEnd="@dimen/_60sdp"
+        android:src="@drawable/game_paused_anim"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="@+id/pause_img_paper"
+        app:layout_constraintEnd_toEndOf="@+id/pause_img_paper"
+        app:layout_constraintStart_toStartOf="@+id/pause_img_paper"
+        app:layout_constraintTop_toBottomOf="@+id/pause_guide_title_top"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_halfvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_togglesvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.45" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_upperhoriz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_lowerhoriz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55" />
+
+    <TextView
+        android:id="@+id/pause_txt_sound"
+        style="@style/UI.Text.Label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/options_txt_sound"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/pause_guide_togglesvert"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="@id/pause_guide_upperhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/pause_guide_upperhoriz"
+        />
+
+    <com.mk.wizardduel.views.ToggleButtonDual
+        android:id="@+id/pause_tglbtn_sound"
+        style="@style/UI.Button.Toggle"
+        android:checked="true"
+        android:textAlignment="center"
+        android:textOff="@string/default_tglbtn_off"
+        android:textOn="@string/default_tglbtn_on"
+        app:layout_constraintBottom_toBottomOf="@id/pause_guide_upperhoriz"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/pause_guide_togglesvert"
+        app:layout_constraintTop_toTopOf="@id/pause_guide_upperhoriz" />
+
+    <TextView
+        android:id="@+id/pause_txt_anim"
+        style="@style/UI.Text.Label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/options_txt_anim"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/pause_guide_togglesvert"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="@id/pause_guide_lowerhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/pause_guide_lowerhoriz"
+        />
+
+    <com.mk.wizardduel.views.ToggleButtonDual
+        android:id="@+id/pause_tglbtn_anim"
+        style="@style/UI.Button.Toggle"
+        android:checked="true"
+        android:textAlignment="center"
+        android:textOff="@string/default_tglbtn_off"
+        android:textOn="@string/default_tglbtn_on"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/pause_guide_togglesvert"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="@id/pause_guide_lowerhoriz"
+        app:layout_constraintBottom_toBottomOf="@id/pause_guide_lowerhoriz"
+        />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/pause_guide_bottomhoriz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.75" />
+
+    <Button
+        android:id="@+id/pause_btn_mainmenu"
+        style="@style/UI.Button"
+        android:text="@string/pause_btn_mainmenu"
+        app:layout_constraintBottom_toTopOf="@+id/pause_guide_bottomhoriz"
+        app:layout_constraintEnd_toStartOf="@+id/pause_guide_halfvert"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/pause_guide_bottomhoriz"
+        app:layout_constraintVertical_bias="0.604"
+        />
+
+    <Button
+        android:id="@+id/pause_btn_resume"
+        style="@style/UI.Button"
+        android:text="@string/pause_btn_resume"
+        app:layout_constraintBottom_toTopOf="@+id/pause_guide_bottomhoriz"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/pause_guide_halfvert"
+        app:layout_constraintTop_toTopOf="@+id/pause_guide_bottomhoriz" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

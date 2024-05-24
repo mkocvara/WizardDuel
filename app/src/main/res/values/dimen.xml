@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="button_width">@dimen/_140sdp</dimen>
+    <dimen name="button_width">@dimen/_130sdp</dimen>
     <dimen name="button_height">@dimen/_60sdp</dimen>
 
     <dimen name="toggle_button_width">@dimen/_110sdp</dimen>
@@ -11,6 +11,8 @@
 
     <dimen name="hud_width">@dimen/_76sdp</dimen>
     <dimen name="hud_height">@dimen/_62sdp</dimen>
+
+    <dimen name="pause_btn_side">@dimen/_35sdp</dimen>
 
     <dimen name="hit_hat_default_width">@dimen/_35sdp</dimen>
     <dimen name="hit_hat_default_height">@dimen/_31sdp</dimen>
