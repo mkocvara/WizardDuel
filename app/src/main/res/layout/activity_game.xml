@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/game_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.GameActivity">
@@ -12,52 +13,78 @@
         android:layout_height="match_parent"
 
         app:castingAreaSize="0.3334"
-        app:wizardsRelativeTop="0.38"
-        app:wizardsRelativeBottom="0.62"
-        app:wizardsRelativeDistFromEdge="0.01"
-
         app:hitHatHeight="70dp"
         app:hitHatWidth="82dp"
-
         app:hitPoints="3"
 
+        app:lengthBasedShieldDepletion="true"
         app:maxChargedFireballs="5"
-        app:startingChargedFireballs="3"
-        app:timeToRechargeFireball="2"
 
         app:maxShieldTime="5"
-        app:shieldRechargeRate="1"
+
         app:shieldDepletionBuffer="0.25"
-        app:lengthBasedShieldDepletion="true"
         app:shieldDepletionMedianSpan="100dp"
-        />
+        app:shieldRechargeRate="1"
+
+        app:startingChargedFireballs="3"
+        app:timeToRechargeFireball="2"
+        app:wizardsRelativeBottom="0.62"
+        app:wizardsRelativeDistFromEdge="0.01"
+        app:wizardsRelativeTop="0.38" />
 
     <LinearLayout
         android:id="@+id/game_layout_hp_p1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:padding="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        android:padding="18dp"
-        />
+        app:layout_constraintVertical_bias="0.0" />
 
     <LinearLayout
         android:id="@+id/game_layout_hp_p2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:padding="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        android:padding="18dp"
-        />
+        app:layout_constraintVertical_bias="0.0" />
+
+    <com.mk.wizardduel.views.HUD
+        android:id="@+id/game_hud_left"
+        android:layout_width="@dimen/hud_width"
+        android:layout_height="@dimen/hud_height"
+        android:paddingStart="@dimen/_5sdp"
+        android:paddingBottom="@dimen/_5sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/game_view"
+        app:layout_constraintEnd_toEndOf="@+id/game_view"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/game_view"
+        app:layout_constraintTop_toTopOf="@+id/game_view"
+        app:layout_constraintVertical_bias="1.0">
+    </com.mk.wizardduel.views.HUD>
+
+    <com.mk.wizardduel.views.HUD
+        android:id="@+id/game_hud_right"
+        android:layout_width="@dimen/hud_width"
+        android:layout_height="@dimen/hud_height"
+        android:paddingStart="@dimen/_5sdp"
+        android:paddingBottom="@dimen/_5sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/game_view"
+        app:layout_constraintEnd_toEndOf="@+id/game_view"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/game_view"
+        app:layout_constraintTop_toTopOf="@+id/game_view"
+        app:layout_constraintVertical_bias="1.0"
+        android:scaleX="-1">
+    </com.mk.wizardduel.views.HUD>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

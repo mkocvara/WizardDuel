@@ -57,6 +57,8 @@ public class Wizard extends GameObject
 
 	public Wizard(@NonNull GameAttributes gameAttributes, Player player)
 	{
+		mPlayer = player;
+
 		mCurrentHitPoints = gameAttributes.getMaxHitPoints();
 		mMaxChargedFireballs = gameAttributes.getMaxChargedFireballs();
 		mChargedFireballs = gameAttributes.getStartingChargedFireballs();
@@ -68,8 +70,6 @@ public class Wizard extends GameObject
 		mUseLengthBasedShieldDepletion = gameAttributes.lengthBasedShieldDepletion;
 		mShieldDepletionMedianSpan = gameAttributes.getShieldDepletionMedianSpan();
 		mCurrentShieldTimeLeft = mMaxShieldTime;
-
-		mPlayer = player;
 
 		int randDrawableIndex = Random.Default.nextInt(drawablePool.length);
 		int drawableRes = drawablePool[randDrawableIndex];
@@ -93,7 +93,18 @@ public class Wizard extends GameObject
 
 	public int getNumChargedFireballs() { return mChargedFireballs; }
 
-	public void setStatusListener(WizardStatusListener listener) { mStatusListener = listener; }
+	public void setStatusListener(WizardStatusListener listener)
+	{
+		mStatusListener = listener;
+
+		if (listener == null)
+			return;
+
+		// To start off with the right values
+		mStatusListener.onFireballsChargedChanged(mPlayer, mChargedFireballs);
+		mStatusListener.onFireballRecharge(mPlayer, mFireballRechargePercent);
+		mStatusListener.onShieldTimeChargedChanged(mPlayer, mShieldChargePercent);
+	}
 
 	@Override
 	public void update(double deltaTime)

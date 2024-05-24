@@ -4,4 +4,7 @@
     <dimen name="button_height">110dp</dimen>
     <dimen name="back_button_width">129dp</dimen>
     <dimen name="back_button_height">55dp</dimen>
+
+    <dimen name="hud_width">@dimen/_76sdp</dimen>
+    <dimen name="hud_height">@dimen/_62sdp</dimen>
 </resources>

@@ -23,6 +23,7 @@ import com.mk.wizardduel.services.GameService;
 import com.mk.wizardduel.R;
 import com.mk.wizardduel.utils.AnimHandler;
 import com.mk.wizardduel.views.GameView;
+import com.mk.wizardduel.views.HUD;
 
 public class GameActivity extends ImmersiveActivity implements Wizard.WizardStatusListener
 {
@@ -35,6 +36,8 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	private AnimHandler mAnimHandler;
 
 	private LinearLayout mHPLayoutP1, mHPLayoutP2;
+
+	private final HUD[] mHud = new HUD[2];
 
 	/** Defines callbacks for service binding, passed to bindService() when binding GameService
 	 * and to unbindService() when unbinding it. */
@@ -67,6 +70,9 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 		mGameView = findViewById(R.id.game_view);
 		mHPLayoutP1 = findViewById(R.id.game_layout_hp_p1);
 		mHPLayoutP2 = findViewById(R.id.game_layout_hp_p2);
+
+		mHud[0] = findViewById(R.id.game_hud_left);
+		mHud[1] = findViewById(R.id.game_hud_right);
 
 		mAnimHandler = new AnimHandler(getLifecycle(), true);
 		getLifecycle().addObserver(mAnimHandler);
@@ -110,6 +116,9 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 		@ColorInt int p1Colour = gameAttributes.player1Colour;
 		@ColorInt int p2Colour = gameAttributes.player2Colour;
 
+		mHud[0].setTint(p1Colour);
+		mHud[1].setTint(p2Colour);
+
 		for (int i = 0; i < Player.COUNT; i++)
 		{
 			for (int j = 0; j < maxHP; j++)
@@ -152,22 +161,24 @@ public class GameActivity extends ImmersiveActivity implements Wizard.WizardStat
 	@Override
 	public void onFireballsChargedChanged(Player player, int newFireballsAvailable)
 	{
-		// TODO
-		//Log.i("DEBUG", "Fireballs Charged Changed for player " + (Player.getInt(player) + 1) + "; now available: " + newFireballsAvailable);
+		runOnUiThread(() -> {
+			int numPlayer = Player.getInt(player);
+			mHud[numPlayer].setNumFireballs(newFireballsAvailable);
+			mHud[numPlayer].setFireballRechargeBarDisabled(newFireballsAvailable == mGameService.getGameAttributes().getMaxChargedFireballs());
+		});
+
 	}
 
 	@Override
 	public void onFireballRecharge(Player player, int percentProgress)
 	{
-		// TODO
-		//Log.i("DEBUG", "Fireball Recharge Changed for player " + (Player.getInt(player) + 1) + "; now at: " + percentProgress + "%");
+		runOnUiThread(() -> mHud[Player.getInt(player)].setFireballBarFill(percentProgress));
 	}
 
 	@Override
-	public void onShieldTimeChargedChanged(Player player, int newEnergyLevel)
+	public void onShieldTimeChargedChanged(Player player, int percentCharged)
 	{
-		// TODO
-		Log.i("DEBUG", "New Shield Energy Level for player " + (Player.getInt(player) + 1) + "; now at: " + newEnergyLevel);
+		runOnUiThread(() -> mHud[Player.getInt(player)].setShieldBarFill(percentCharged));
 	}
 
 	private void gameOver()

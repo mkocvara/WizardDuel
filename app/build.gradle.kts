@@ -45,4 +45,5 @@ dependencies {
     val lifecycleVersion = "2.7.0"
     implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion")
+    implementation("com.intuit.sdp:sdp-android:1.1.1") // SOURCE: https://github.com/intuit/sdp
 }
