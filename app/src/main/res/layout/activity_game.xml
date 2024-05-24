@@ -13,8 +13,8 @@
         android:layout_height="match_parent"
 
         app:castingAreaSize="0.3334"
-        app:hitHatHeight="70dp"
-        app:hitHatWidth="82dp"
+        app:hitHatHeight="@dimen/_37sdp"
+        app:hitHatWidth="@dimen/_33sdp"
         app:hitPoints="3"
 
         app:lengthBasedShieldDepletion="true"
@@ -23,7 +23,7 @@
         app:maxShieldTime="5"
 
         app:shieldDepletionBuffer="0.25"
-        app:shieldDepletionMedianSpan="100dp"
+        app:shieldDepletionMedianSpan="@dimen/_25sdp"
         app:shieldRechargeRate="1"
 
         app:startingChargedFireballs="3"
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="18dp"
+        android:padding="@dimen/_7sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -50,7 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="18dp"
+        android:padding="@dimen/_7sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

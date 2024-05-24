@@ -21,8 +21,6 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 {
 
 	private static final String TOUCH_DEBUG_TAG = "DEBUG:Touch"; // Logging tag
-	private static final float MAX_SPAN_TO_SHIELD_DIP = 100.f;
-		// initialise here with dp, constructor converts into px and puts it in MAX_SHIELD_SPAN
 
 	// Message type constants akin to those used by GestureDetector,
 	// except using it for Message.arg1 in GameGestureHandler below
@@ -85,12 +83,12 @@ public class GameInputManager extends 	  GestureDetector.SimpleOnGestureListener
 
 	public GameInputManager(GameService gameService, ViewConfiguration viewConfiguration)
 	{
+		MAX_SPAN_TO_SHIELD = WizardApplication.getAppResources().getDimension(R.dimen.max_span_to_shield);
 		mGameService = gameService;
 		mViewConfig = viewConfiguration;
 		mHandler = new GameGestureHandler();
 			// TODO would be improved by running it in another thread, but alas, I lack the time to implement that
 
-		MAX_SPAN_TO_SHIELD = WizardApplication.dipToPx(MAX_SPAN_TO_SHIELD_DIP);
 	}
 
 	/** Called manually by GameView. Top-level touch event. */

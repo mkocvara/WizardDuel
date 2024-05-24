@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.25"/>
+        app:layout_constraintGuide_percent="0.23"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/options_guide_lowerhoriz"
@@ -30,10 +30,11 @@
     <TextView
         android:id="@+id/options_txt_sound"
         style="@style/UI.Text.Label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/options_txt_sound"
+        android:textAlignment="textEnd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/options_guide_halfvert"
         app:layout_constraintHorizontal_bias="1.0"
@@ -57,10 +58,11 @@
     <TextView
         android:id="@+id/options_txt_anim"
         style="@style/UI.Text.Label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/options_txt_anim"
+        android:textAlignment="textEnd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/options_guide_halfvert"
         app:layout_constraintHorizontal_bias="1.0"
@@ -123,14 +125,19 @@
                 android:text="@string/app_name"
                 app:fontWeight="800"
                 android:textFontWeight="800"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="@dimen/_3sdp"
                 tools:ignore="UnusedAttribute" />
 
             <TextView
                 android:id="@+id/options_txt_credits"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/options_txt_credits" />
+                android:text="@string/options_txt_credits"
+
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="20sp"
+                />
         </LinearLayout>
     </ScrollView>
 

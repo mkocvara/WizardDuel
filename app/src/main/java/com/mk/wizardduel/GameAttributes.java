@@ -28,10 +28,9 @@ public class GameAttributes
 	public RectF wizard1RelativeBounds = new RectF(0.01f, 0.38f, 0.f, 0.62f);
 	public RectF wizard2RelativeBounds = new RectF(0.00f, 0.38f, 0.99f, 0.62f);
 
-	/** Dips by default. */
-	public int hitHatHeight = 55;
-	/** Dips by default. */
-	public int hitHatWidth = 67;
+
+	public int hitHatHeight = (int) WizardApplication.getAppResources().getDimension(R.dimen.hit_hat_default_height);
+	public int hitHatWidth = (int) WizardApplication.getAppResources().getDimension(R.dimen.hit_hat_default_width);
 
 	private int mMaxHitPoints = 3;
 	public int getMaxHitPoints() { return mMaxHitPoints; }
@@ -39,9 +38,8 @@ public class GameAttributes
 	public void setMaxHitPoints(int maxHP) { mMaxHitPoints = Utils.clamp(maxHP, 0, 5); }
 
 	public float fireballRelativeHeight = 0.072f;
-	/** Default in dips. Should be converted. */
-	public int fireballSpeed = 375;
-
+	/** Distance covered per second. */
+	public int fireballSpeed = (int) WizardApplication.getAppResources().getDimension(R.dimen.fireball_speed);
 	private int mMaxChargedFireballs = 5;
 	public int getMaxChargedFireballs() { return mMaxChargedFireballs; }
 	public void setMaxChargedFireballs(int maxChargedFireballs) { mMaxChargedFireballs = Utils.clamp(maxChargedFireballs, 1, 99); }
@@ -78,9 +76,8 @@ public class GameAttributes
 	public boolean lengthBasedShieldDepletion = true;
 
 	/** The length of shield at which the shield depletes at a rate of 1 per 1 second.
-	 * Only applies if lengthBasedShieldDepletion is true.
-	 * Backup value, convert from dips. */
-	private int mShieldDepletionMedianSpan = 100;
+	 * Only applies if lengthBasedShieldDepletion is true.*/
+	private int mShieldDepletionMedianSpan = (int) WizardApplication.getAppResources().getDimension(R.dimen.shield_depletion_median_span);
 	public int getShieldDepletionMedianSpan() { return mShieldDepletionMedianSpan; }
 	public void setShieldDepletionMedianSpan(int span) { mShieldDepletionMedianSpan = Utils.clamp(span, 1, 999); }
 }

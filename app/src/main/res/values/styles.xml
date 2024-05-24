@@ -12,12 +12,16 @@
         <item name="android:backgroundTint">?colorPrimary</item>
         <item name="backgroundTint">?colorPrimary</item>
 
-        <item name="android:textSize">40sp</item>
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">10sp</item>
+        <item name="autoSizeMaxTextSize">40sp</item>
+
         <item name="fontWeight">600</item>
         <item name="android:textAlignment">center</item>
         <item name="android:gravity">center</item>
 
         <item name="android:padding">5dp</item>
+        <item name="android:scaleType">fitCenter</item>
 
         <!-- NOTE: Have to apply the style directly in layout to get layout attributes to work: -->
         <item name="android:layout_width">@dimen/button_width</item>
@@ -37,6 +41,9 @@
 
     <style name="UI.Button.Toggle" parent="@style/UI.Button">
         <item name="android:background">@drawable/togglebutton</item>
+
+        <item name="android:layout_width">@dimen/toggle_button_width</item>
+        <item name="android:layout_height">@dimen/toggle_button_height</item>
     </style>
 
     <style name="UI.Text" parent="UI">
@@ -45,7 +52,10 @@
     </style>
 
     <style name="UI.Text.Label" parent="UI.Text">
-        <item name="android:textSize">55sp</item>
+
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">30sp</item>
+        <item name="autoSizeMaxTextSize">55sp</item>
 
         <item name="android:textAlignment">center</item>
         <item name="android:gravity">center</item>

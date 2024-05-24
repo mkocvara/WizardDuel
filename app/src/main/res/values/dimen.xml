@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="button_width">258dp</dimen>
-    <dimen name="button_height">110dp</dimen>
-    <dimen name="back_button_width">129dp</dimen>
-    <dimen name="back_button_height">55dp</dimen>
+    <dimen name="button_width">@dimen/_140sdp</dimen>
+    <dimen name="button_height">@dimen/_60sdp</dimen>
+
+    <dimen name="toggle_button_width">@dimen/_110sdp</dimen>
+    <dimen name="toggle_button_height">@dimen/_45sdp</dimen>
+
+    <dimen name="back_button_width">@dimen/_70sdp</dimen>
+    <dimen name="back_button_height">@dimen/_33sdp</dimen>
 
     <dimen name="hud_width">@dimen/_76sdp</dimen>
     <dimen name="hud_height">@dimen/_62sdp</dimen>
+
+    <dimen name="hit_hat_default_width">@dimen/_35sdp</dimen>
+    <dimen name="hit_hat_default_height">@dimen/_31sdp</dimen>
+
+    <dimen name="shield_depletion_median_span">@dimen/_25sdp</dimen>
+    <dimen name="max_span_to_shield">@dimen/_55sdp</dimen>
+    <dimen name="fireball_speed">@dimen/_65sdp</dimen>
 </resources>
